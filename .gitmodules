@@ -1,0 +1,3 @@
+[submodule "tools/agent-pack"]
+	path = tools/agent-pack
+	url = https://github.com/gitgotgut/DevTeam.git

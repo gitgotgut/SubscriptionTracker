@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+
+# Run artifacts
+runs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Design exports (binary)
+design/exports/*.png
+design/exports/*.svg
+design/exports/*.pdf
