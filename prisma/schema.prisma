@@ -12,9 +12,12 @@ model User {
   id              String         @id @default(cuid())
   email           String         @unique
   passwordHash    String
-  displayCurrency String         @default("USD")
-  householdId     String?
-  createdAt       DateTime       @default(now())
+  displayCurrency    String         @default("USD")
+  householdId        String?
+  gmailAccessToken   String?
+  gmailRefreshToken  String?
+  gmailTokenExpiry   DateTime?
+  createdAt          DateTime       @default(now())
   subscriptions   Subscription[]
   history         SubscriptionHistory[]
   household       Household?     @relation("HouseholdOwner")

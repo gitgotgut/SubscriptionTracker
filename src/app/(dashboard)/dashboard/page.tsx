@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { signOut } from "next-auth/react";
-import { Plus, LogOut, Pencil, Trash2, History, Layers, TrendingDown, Users, X } from "lucide-react";
+import { Plus, LogOut, Pencil, Trash2, History, Layers, TrendingDown, Users, X, Mail } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SubscriptionForm, type SubscriptionFormData, type SubForForm } from "@/components/subscription-form";
 import { SpendingChart } from "@/components/spending-chart";
+import { GmailImportModal } from "@/components/gmail-import-modal";
 import { toMonthlyCents, centsToDisplay } from "@/lib/utils";
 
 type Subscription = SubForForm & {
@@ -61,6 +62,10 @@ export default function DashboardPage() {
   // Household
   const [householdId, setHouseholdId] = useState<string | null>(null);
   const [householdName, setHouseholdName] = useState<string | null>(null);
+  // Gmail
+  const [gmailConnected, setGmailConnected] = useState(false);
+  const [gmailModalOpen, setGmailModalOpen] = useState(false);
+  const [gmailNotice, setGmailNotice] = useState<string | null>(null);
 
   const fetchSubscriptions = useCallback(async () => {
     const res = await fetch("/api/subscriptions");
@@ -74,7 +79,15 @@ export default function DashboardPage() {
     fetch("/api/me").then(r => r.json()).then(u => {
       if (u?.displayCurrency) setDisplayCurrency(u.displayCurrency);
       if (u?.householdId) setHouseholdId(u.householdId);
+      setGmailConnected(!!u?.gmailConnected);
     });
+    // Show a notice if Google redirected back with a status param
+    const params = new URLSearchParams(window.location.search);
+    const gmailStatus = params.get("gmail");
+    if (gmailStatus === "connected") setGmailNotice("Gmail connected successfully.");
+    else if (gmailStatus === "denied") setGmailNotice("Gmail access was denied.");
+    else if (gmailStatus === "error") setGmailNotice("Gmail connection failed. Please try again.");
+    if (gmailStatus) window.history.replaceState({}, "", "/dashboard");
     fetch("/api/exchange-rates").then(r => r.json()).then(d => {
       setRates(d.rates ?? { USD: 1 });
       setRatesFallback(d.fallback ?? false);
@@ -157,6 +170,17 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-2">
             {ratesFallback && <span className="text-xs text-amber-600">Rates unavailable — showing USD</span>}
+            {gmailConnected ? (
+              <Button variant="ghost" size="sm" className="text-xs gap-1 text-green-700"
+                onClick={async () => { await fetch("/api/gmail/disconnect", { method: "DELETE" }); setGmailConnected(false); }}>
+                <Mail className="h-3.5 w-3.5" />Gmail
+              </Button>
+            ) : (
+              <Button variant="ghost" size="sm" className="text-xs gap-1"
+                onClick={() => { window.location.href = "/api/gmail/connect"; }}>
+                <Mail className="h-3.5 w-3.5" />Connect Gmail
+              </Button>
+            )}
             <Select value={displayCurrency} onValueChange={handleChangeCurrency}>
               <SelectTrigger className="w-24 h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>{CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
@@ -202,6 +226,11 @@ export default function DashboardPage() {
                   onClick={() => { setCalcMode(!calcMode); setExcluded(new Set()); }}>
                   <TrendingDown className="h-4 w-4 mr-1" />{calcMode ? "Exit calculator" : "Cancel calculator"}
                 </Button>
+                {gmailConnected && (
+                  <Button size="sm" variant="outline" onClick={() => setGmailModalOpen(true)}>
+                    <Mail className="h-4 w-4 mr-1" />Import from Gmail
+                  </Button>
+                )}
                 <Button size="sm" onClick={() => { setEditTarget(null); setModalOpen(true); }}>
                   <Plus className="h-4 w-4 mr-1" />Add
                 </Button>
@@ -285,6 +314,24 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+
+      {/* Gmail notice banner */}
+      {gmailNotice && (
+        <div className="fixed bottom-4 right-4 bg-card border rounded-lg shadow-lg px-4 py-3 flex items-center gap-3 text-sm z-50">
+          <Mail className="h-4 w-4 text-blue-600 shrink-0" />
+          {gmailNotice}
+          <button onClick={() => setGmailNotice(null)} className="ml-2 text-muted-foreground hover:text-foreground">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Gmail import modal */}
+      <GmailImportModal
+        open={gmailModalOpen}
+        onClose={() => setGmailModalOpen(false)}
+        onImported={() => { fetchSubscriptions(); setGmailModalOpen(false); }}
+      />
 
       {/* Add/Edit modal */}
       <Dialog open={modalOpen} onOpenChange={(o) => { if (!o) { setModalOpen(false); setEditTarget(null); } }}>

@@ -11,10 +11,10 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, email: true, displayCurrency: true, householdId: true },
+    select: { id: true, email: true, displayCurrency: true, householdId: true, gmailAccessToken: true },
   });
 
-  return NextResponse.json(user);
+  return NextResponse.json({ ...user, gmailConnected: !!user?.gmailAccessToken, gmailAccessToken: undefined });
 }
 
 const updateSchema = z.object({
