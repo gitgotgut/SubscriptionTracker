@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model User {
+  id              String         @id @default(cuid())
+  email           String         @unique
+  passwordHash    String
+  displayCurrency String         @default("USD")
+  householdId     String?
+  createdAt       DateTime       @default(now())
+  subscriptions   Subscription[]
+  history         SubscriptionHistory[]
+  household       Household?     @relation("HouseholdOwner")
+  memberOf        HouseholdMember?
+}
+
+model Subscription {
+  id                    String   @id @default(cuid())
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  householdId           String?
+  household             Household? @relation(fields: [householdId], references: [id], onDelete: SetNull)
+  name                  String
+  category              String   @default("Other")
+  amountCents           Int
+  currency              String   @default("USD")
+  billingCycle          String
+  renewalDate           DateTime
+  status                String   @default("active")
+  trialEndDate          DateTime?
+  notes                 String?
+  monthlySavingsHintCents Int?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  history               SubscriptionHistory[]
+
+  @@index([userId])
+  @@index([householdId])
+}
+
+model SubscriptionHistory {
+  id             String       @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  field          String
+  oldValue       String?
+  newValue       String?
+  changedAt      DateTime     @default(now())
+
+  @@index([subscriptionId])
+}
+
+model Household {
+  id          String            @id @default(cuid())
+  name        String
+  ownerId     String            @unique
+  owner       User              @relation("HouseholdOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime          @default(now())
+  members     HouseholdMember[]
+  subscriptions Subscription[]
+}
+
+model HouseholdMember {
+  id          String    @id @default(cuid())
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        String    @default("member")
+  joinedAt    DateTime  @default(now())
+
+  @@unique([householdId, userId])
+}

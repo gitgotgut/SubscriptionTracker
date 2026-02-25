@@ -13,3 +13,21 @@ Thumbs.db
 design/exports/*.png
 design/exports/*.svg
 design/exports/*.pdf
+
+# Dependencies
+/node_modules
+
+# Next.js
+/.next/
+/out/
+
+# Local env files
+.env*.local
+.env
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel
+.vercel

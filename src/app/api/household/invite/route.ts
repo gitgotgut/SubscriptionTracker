@@ -1,0 +1,67 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { SignJWT } from "jose";
+import { Resend } from "resend";
+import { z } from "zod";
+
+const db = prisma as any;
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+function getSecret() {
+  const s = process.env.NEXTAUTH_SECRET;
+  if (!s) throw new Error("NEXTAUTH_SECRET not set");
+  return new TextEncoder().encode(s);
+}
+
+export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await req.json();
+  const parsed = z.object({ email: z.string().email() }).safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+  }
+
+  const household = await db.household.findUnique({ where: { ownerId: session.user.id } });
+  if (!household) {
+    return NextResponse.json({ error: "Create a household first" }, { status: 404 });
+  }
+
+  const token = await new SignJWT({
+    householdId: household.id,
+    invitedEmail: parsed.data.email,
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("7d")
+    .sign(getSecret());
+
+  const acceptUrl = `${process.env.NEXTAUTH_URL}/api/household/accept?token=${token}`;
+
+  await resend.emails.send({
+    from: "Subtrack <invites@subtrack.app>",
+    to: parsed.data.email,
+    subject: `You've been invited to a Subtrack household`,
+    html: `
+      <body style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 16px">
+        <h2 style="font-size:20px;font-weight:600">You're invited</h2>
+        <p style="color:#6b7280;font-size:14px">
+          You've been invited to join <strong>${household.name}</strong> on Subtrack —
+          a shared space for tracking household subscriptions together.
+        </p>
+        <a href="${acceptUrl}"
+           style="display:inline-block;margin-top:16px;padding:10px 20px;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600">
+          Accept invitation
+        </a>
+        <p style="margin-top:24px;font-size:12px;color:#9ca3af">
+          This link expires in 7 days. If you didn't expect this, ignore this email.
+        </p>
+      </body>
+    `,
+  });
+
+  return NextResponse.json({ ok: true });
+}

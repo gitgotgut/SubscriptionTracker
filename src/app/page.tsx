@@ -1,0 +1,278 @@
+import Link from "next/link";
+import { auth } from "@/auth";
+import {
+  CreditCard,
+  BarChart3,
+  CalendarCheck,
+  ArrowRight,
+  Check,
+  Layers,
+} from "lucide-react";
+
+export default async function Home() {
+  const session = await auth();
+
+  return (
+    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
+
+      {/* ─── Header ─── */}
+      <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Layers className="h-5 w-5 text-blue-600" />
+            <span className="font-semibold tracking-tight">Subtrack</span>
+          </div>
+          <nav className="flex items-center gap-3">
+            {session ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+              >
+                Dashboard <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+                >
+                  Get started
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
+      </header>
+
+      <main className="flex-1">
+
+        {/* ─── Hero ─── */}
+        <section className="max-w-5xl mx-auto px-6 pt-24 pb-20 text-center">
+          <p className="inline-block mb-6 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 tracking-wide uppercase">
+            Free to use · No card required
+          </p>
+          <h1 className="text-5xl sm:text-6xl font-bold tracking-tight leading-tight mb-6">
+            Every subscription.
+            <br />
+            <span className="text-blue-600">One clear view.</span>
+          </h1>
+          <p className="max-w-xl mx-auto text-lg text-gray-500 mb-10 leading-relaxed">
+            Stop losing track of what you pay for. Subtrack gives you a single,
+            honest overview of every recurring charge — streaming, fitness,
+            software, meal plans, and more.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              Start tracking for free <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Sign in
+            </Link>
+          </div>
+        </section>
+
+        {/* ─── Dashboard preview placeholder ─── */}
+        <section className="max-w-4xl mx-auto px-6 pb-24">
+          <div className="rounded-2xl border border-gray-100 bg-gray-50 overflow-hidden shadow-sm">
+            {/* Mock browser chrome */}
+            <div className="flex items-center gap-1.5 px-4 py-3 border-b border-gray-200 bg-white">
+              <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+              <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
+              <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
+              <span className="ml-4 flex-1 rounded bg-gray-100 h-5 max-w-xs text-xs text-gray-400 flex items-center px-3">
+                subtrack.app/dashboard
+              </span>
+            </div>
+            {/* Mock dashboard */}
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-gray-200 bg-white p-4">
+                  <p className="text-xs text-gray-400 mb-1">Monthly spend</p>
+                  <p className="text-2xl font-bold text-gray-900">$84.97</p>
+                </div>
+                <div className="rounded-xl border border-gray-200 bg-white p-4">
+                  <p className="text-xs text-gray-400 mb-1">Annual spend</p>
+                  <p className="text-2xl font-bold text-gray-900">$1,019.64</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { name: "Netflix", cat: "Streaming", amount: "$15.99/mo", color: "bg-purple-100 text-purple-700" },
+                  { name: "Spotify", cat: "Streaming", amount: "$9.99/mo", color: "bg-purple-100 text-purple-700" },
+                  { name: "Gym membership", cat: "Fitness", amount: "$34.99/mo", color: "bg-green-100 text-green-700" },
+                  { name: "HelloFresh", cat: "Food", amount: "$79.99/mo", color: "bg-orange-100 text-orange-700" },
+                ].map((item) => (
+                  <div key={item.name} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3">
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${item.color}`}>
+                      {item.cat}
+                    </span>
+                    <span className="flex-1 text-sm font-medium text-gray-800">{item.name}</span>
+                    <span className="text-sm font-semibold text-gray-900">{item.amount}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Features ─── */}
+        <section className="bg-gray-50 border-y border-gray-100 py-20">
+          <div className="max-w-5xl mx-auto px-6">
+            <h2 className="text-2xl font-bold tracking-tight mb-2 text-center">
+              Everything you need, nothing you don&apos;t
+            </h2>
+            <p className="text-gray-500 text-center mb-12 text-sm">
+              Built for people who want clarity, not complexity.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                {
+                  icon: <CreditCard className="h-5 w-5 text-blue-600" />,
+                  title: "Track everything",
+                  description:
+                    "Add any subscription in seconds. Name, cost, billing cycle, renewal date — stored cleanly in one place.",
+                },
+                {
+                  icon: <BarChart3 className="h-5 w-5 text-blue-600" />,
+                  title: "See your real spend",
+                  description:
+                    "Instantly see your total monthly and annual cost, broken down by category so you know exactly where your money goes.",
+                },
+                {
+                  icon: <CalendarCheck className="h-5 w-5 text-blue-600" />,
+                  title: "Stay ahead of renewals",
+                  description:
+                    "Know exactly when each subscription renews before the charge hits your account. No more surprise bills.",
+                },
+              ].map((f) => (
+                <div key={f.title} className="rounded-xl border border-gray-200 bg-white p-6">
+                  <div className="mb-4 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50">
+                    {f.icon}
+                  </div>
+                  <h3 className="font-semibold mb-2">{f.title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{f.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ─── How it works ─── */}
+        <section className="py-20">
+          <div className="max-w-3xl mx-auto px-6 text-center">
+            <h2 className="text-2xl font-bold tracking-tight mb-2">
+              Up and running in minutes
+            </h2>
+            <p className="text-gray-500 text-sm mb-14">
+              Three steps. No integrations. No bank access required.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+              {[
+                {
+                  step: "01",
+                  title: "Create your account",
+                  description: "Sign up with just your email. Free, no credit card.",
+                },
+                {
+                  step: "02",
+                  title: "Add your subscriptions",
+                  description: "Enter each service manually — name, amount, renewal date.",
+                },
+                {
+                  step: "03",
+                  title: "See the full picture",
+                  description: "Your dashboard shows totals, categories, and upcoming renewals.",
+                },
+              ].map((s) => (
+                <div key={s.step} className="flex flex-col items-center text-center">
+                  <span className="mb-4 text-4xl font-bold text-blue-100 select-none">
+                    {s.step}
+                  </span>
+                  <h3 className="font-semibold mb-2 text-sm">{s.title}</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">{s.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ─── CTA strip ─── */}
+        <section className="bg-blue-600 py-16">
+          <div className="max-w-xl mx-auto px-6 text-center">
+            <h2 className="text-2xl font-bold text-white mb-3">
+              Ready to take control?
+            </h2>
+            <p className="text-blue-200 text-sm mb-8">
+              It takes less than two minutes to get started.
+            </p>
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-colors shadow-sm"
+            >
+              Create free account <ArrowRight className="h-4 w-4" />
+            </Link>
+            <ul className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-blue-200">
+              {["Free forever", "No credit card", "Delete anytime"].map((t) => (
+                <li key={t} className="flex items-center gap-1.5">
+                  <Check className="h-3.5 w-3.5" /> {t}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+      </main>
+
+      {/* ─── Footer ─── */}
+      <footer className="border-t border-gray-100 bg-white">
+        <div className="max-w-5xl mx-auto px-6 py-10">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Layers className="h-4 w-4 text-blue-600" />
+                <span className="font-semibold text-sm tracking-tight">Subtrack</span>
+              </div>
+              <p className="text-xs text-gray-400 max-w-xs">
+                A simple tool to keep every subscription in one place and know exactly what you&apos;re spending.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-6 text-xs text-gray-400">
+              <div>
+                <p className="font-medium text-gray-600 mb-2">Product</p>
+                <ul className="space-y-1.5">
+                  <li><Link href="/register" className="hover:text-gray-600 transition-colors">Get started</Link></li>
+                  <li><Link href="/login" className="hover:text-gray-600 transition-colors">Sign in</Link></li>
+                </ul>
+              </div>
+              <div>
+                <p className="font-medium text-gray-600 mb-2">Legal</p>
+                <ul className="space-y-1.5">
+                  <li><span className="cursor-default">Privacy policy</span></li>
+                  <li><span className="cursor-default">Terms of service</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <p className="text-xs text-gray-400">
+              © {new Date().getFullYear()} Subtrack. Built to keep your subscriptions honest.
+            </p>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  );
+}
