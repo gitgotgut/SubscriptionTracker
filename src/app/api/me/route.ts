@@ -11,14 +11,17 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, email: true, displayCurrency: true, householdId: true, gmailAccessToken: true },
+    select: { id: true, email: true, displayCurrency: true, householdId: true, gmailAccessToken: true, emailReminders: true },
   });
 
   return NextResponse.json({ ...user, gmailConnected: !!user?.gmailAccessToken, gmailAccessToken: undefined });
 }
 
 const updateSchema = z.object({
-  displayCurrency: z.string().length(3).toUpperCase(),
+  displayCurrency: z.string().length(3).toUpperCase().optional(),
+  emailReminders: z.boolean().optional(),
+}).refine((d) => d.displayCurrency !== undefined || d.emailReminders !== undefined, {
+  message: "At least one field required",
 });
 
 export async function PATCH(req: NextRequest) {
@@ -33,10 +36,14 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
   }
 
+  const data: Record<string, unknown> = {};
+  if (parsed.data.displayCurrency !== undefined) data.displayCurrency = parsed.data.displayCurrency;
+  if (parsed.data.emailReminders !== undefined) data.emailReminders = parsed.data.emailReminders;
+
   const updated = await prisma.user.update({
     where: { id: session.user.id },
-    data: { displayCurrency: parsed.data.displayCurrency },
-    select: { id: true, email: true, displayCurrency: true },
+    data,
+    select: { id: true, email: true, displayCurrency: true, emailReminders: true },
   });
 
   return NextResponse.json(updated);

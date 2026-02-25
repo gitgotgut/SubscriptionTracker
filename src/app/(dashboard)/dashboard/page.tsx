@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { signOut } from "next-auth/react";
-import { Plus, LogOut, Pencil, Trash2, History, Layers, TrendingDown, Users, X, Mail } from "lucide-react";
+import { Plus, LogOut, Pencil, Trash2, History, Layers, TrendingDown, Users, X, Mail, Bell, BellOff } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SubscriptionForm, type SubscriptionFormData, type SubForForm } from "@/components/subscription-form";
 import { SpendingChart } from "@/components/spending-chart";
+import { SpendingTrendChart } from "@/components/spending-trend-chart";
+import { SpendChangeBadge } from "@/components/spend-change-badge";
 import { GmailImportModal } from "@/components/gmail-import-modal";
 import { toMonthlyCents, centsToDisplay } from "@/lib/utils";
 
@@ -34,10 +36,11 @@ const CURRENCIES = ["USD","EUR","GBP","SEK","NOK","DKK","CHF","CAD","AUD","JPY"]
 function TrialBadge({ trialEndDate }: { trialEndDate: string }) {
   const days = differenceInDays(new Date(trialEndDate), new Date());
   const isExpired = days < 0;
-  const isSoon = days <= 7 && days >= 0;
+  const isCritical = days >= 0 && days <= 3;
+  const isSoon = days >= 0 && days <= 7;
   return (
-    <span className={`text-xs font-medium ${isExpired ? "text-red-600" : isSoon ? "text-amber-600" : "text-amber-500"}`}>
-      {isExpired ? `Trial ended ${format(new Date(trialEndDate), "MMM d")}` : days === 0 ? "Trial ends today" : `Trial ends in ${days}d`}
+    <span className={`text-xs font-medium ${isExpired ? "text-red-600" : isCritical ? "text-red-500 animate-pulse" : isSoon ? "text-amber-600" : "text-amber-500"}`}>
+      {isExpired ? `Trial ended ${format(new Date(trialEndDate), "MMM d")}` : days === 0 ? "Trial ends today — converts to paid!" : isCritical ? `Trial ends in ${days}d — converts to paid` : `Trial ends in ${days}d`}
     </span>
   );
 }
@@ -66,6 +69,7 @@ export default function DashboardPage() {
   const [gmailConnected, setGmailConnected] = useState(false);
   const [gmailModalOpen, setGmailModalOpen] = useState(false);
   const [gmailNotice, setGmailNotice] = useState<string | null>(null);
+  const [emailReminders, setEmailReminders] = useState(true);
 
   const fetchSubscriptions = useCallback(async () => {
     const res = await fetch("/api/subscriptions");
@@ -80,6 +84,7 @@ export default function DashboardPage() {
       if (u?.displayCurrency) setDisplayCurrency(u.displayCurrency);
       if (u?.householdId) setHouseholdId(u.householdId);
       setGmailConnected(!!u?.gmailConnected);
+      if (u?.emailReminders !== undefined) setEmailReminders(u.emailReminders);
     });
     // Show a notice if Google redirected back with a status param
     const params = new URLSearchParams(window.location.search);
@@ -181,6 +186,15 @@ export default function DashboardPage() {
                 <Mail className="h-3.5 w-3.5" />Connect Gmail
               </Button>
             )}
+            <Button variant="ghost" size="sm" className="text-xs gap-1"
+              onClick={async () => {
+                const next = !emailReminders;
+                setEmailReminders(next);
+                await fetch("/api/me", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ emailReminders: next }) });
+              }}>
+              {emailReminders ? <Bell className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5 text-muted-foreground" />}
+              {emailReminders ? "Reminders" : "Reminders off"}
+            </Button>
             <Select value={displayCurrency} onValueChange={handleChangeCurrency}>
               <SelectTrigger className="w-24 h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>{CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
@@ -200,6 +214,7 @@ export default function DashboardPage() {
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Monthly spend</CardTitle></CardHeader>
             <CardContent>
               <p className="text-3xl font-bold">{sym}{centsToDisplay(totalMonthlyCents)}</p>
+              <SpendChangeBadge />
               {calcMode && savingCents > 0 && <p className="text-sm text-green-600 font-medium mt-1">Saving {sym}{centsToDisplay(savingCents)}/mo</p>}
             </CardContent>
           </Card>
@@ -212,10 +227,16 @@ export default function DashboardPage() {
         {/* Chart + List */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {subscriptions.length > 0 && (
-            <Card className="lg:col-span-1">
-              <CardHeader><CardTitle className="text-base">By category</CardTitle></CardHeader>
-              <CardContent><SpendingChart subscriptions={calcActiveSubs} /></CardContent>
-            </Card>
+            <div className="lg:col-span-1 space-y-6">
+              <Card>
+                <CardHeader><CardTitle className="text-base">By category</CardTitle></CardHeader>
+                <CardContent><SpendingChart subscriptions={calcActiveSubs} /></CardContent>
+              </Card>
+              <Card>
+                <CardHeader><CardTitle className="text-base">Spending trend</CardTitle></CardHeader>
+                <CardContent><SpendingTrendChart /></CardContent>
+              </Card>
+            </div>
           )}
 
           <div className={subscriptions.length > 0 ? "lg:col-span-2" : "lg:col-span-3"}>

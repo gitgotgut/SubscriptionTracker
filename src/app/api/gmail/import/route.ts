@@ -144,7 +144,11 @@ Body: ${e.body}`
     messages: [{ role: "user", content: prompt }],
   });
 
-  let candidates: unknown[] = [];
+  type RawCandidate = {
+    serviceName: string; amount: number; currency: string;
+    billingCycle: string; renewalDate: string; category: string;
+  };
+  let candidates: RawCandidate[] = [];
   try {
     const text = (response.content[0] as { type: string; text: string }).text.trim();
     const match = text.match(/\[[\s\S]*\]/);
@@ -153,7 +157,32 @@ Body: ${e.body}`
     candidates = [];
   }
 
-  return NextResponse.json({ candidates, scanned: emailData.length });
+  // Compare against existing subscriptions to detect price changes
+  const existingSubs = await prisma.subscription.findMany({
+    where: { userId },
+    select: { id: true, name: true, amountCents: true, billingCycle: true, currency: true },
+  });
+
+  const normalize = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+  const existingMap = new Map(existingSubs.map((s) => [normalize(s.name), s]));
+
+  const annotated = candidates.map((c) => {
+    const match = existingMap.get(normalize(c.serviceName));
+    const newAmountCents = Math.round(c.amount * 100);
+    if (match) {
+      return {
+        ...c,
+        isExisting: true,
+        priceChanged: match.amountCents !== newAmountCents,
+        existingId: match.id,
+        existingAmountCents: match.amountCents,
+        newAmountCents,
+      };
+    }
+    return { ...c, isExisting: false, priceChanged: false };
+  });
+
+  return NextResponse.json({ candidates: annotated, scanned: emailData.length });
   } catch (e) {
     const raw = e instanceof Error ? e.message : "Unexpected error";
     // Surface a friendly message for Anthropic credit exhaustion

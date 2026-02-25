@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Mail, CheckSquare, Square, AlertCircle } from "lucide-react";
+import { Loader2, Mail, CheckSquare, Square, AlertCircle, ArrowRight } from "lucide-react";
 
 type Candidate = {
   serviceName: string;
@@ -13,6 +13,12 @@ type Candidate = {
   billingCycle: "monthly" | "annual";
   renewalDate: string;
   category: string;
+  // Price change detection fields (set by server)
+  isExisting?: boolean;
+  priceChanged?: boolean;
+  existingId?: string;
+  existingAmountCents?: number;
+  newAmountCents?: number;
 };
 
 type Props = {
@@ -40,9 +46,18 @@ export function GmailImportModal({ open, onClose, onImported }: Props) {
         throw new Error(body.error ?? "Scan failed");
       }
       const data = await res.json();
-      setCandidates(data.candidates ?? []);
+      const items: Candidate[] = data.candidates ?? [];
+      setCandidates(items);
       setScanned(data.scanned ?? 0);
-      setSelected(new Set(data.candidates.map((_: Candidate, i: number) => i)));
+      // Auto-select new subs and price changes; deselect already-tracked same-price
+      setSelected(
+        new Set(
+          items
+            .map((c, i) => ({ c, i }))
+            .filter(({ c }) => !c.isExisting || c.priceChanged)
+            .map(({ i }) => i)
+        )
+      );
       setStep("review");
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : "Unknown error");
@@ -60,23 +75,35 @@ export function GmailImportModal({ open, onClose, onImported }: Props) {
 
   async function importSelected() {
     setStep("importing");
-    const toImport = candidates.filter((_, i) => selected.has(i));
+    const toProcess = candidates.filter((_, i) => selected.has(i));
     await Promise.all(
-      toImport.map((c) =>
-        fetch("/api/subscriptions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: c.serviceName,
-            amount: String(c.amount),
-            currency: c.currency,
-            billingCycle: c.billingCycle,
-            renewalDate: c.renewalDate,
-            category: c.category,
-            status: "active",
-          }),
-        })
-      )
+      toProcess.map((c) => {
+        if (c.isExisting && c.priceChanged && c.existingId) {
+          // Update existing subscription price (history tracked by PATCH handler)
+          return fetch(`/api/subscriptions/${c.existingId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount: String(c.amount) }),
+          });
+        }
+        if (!c.isExisting) {
+          // Create new subscription
+          return fetch("/api/subscriptions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: c.serviceName,
+              amount: String(c.amount),
+              currency: c.currency,
+              billingCycle: c.billingCycle,
+              renewalDate: c.renewalDate,
+              category: c.category,
+              status: "active",
+            }),
+          });
+        }
+        return Promise.resolve();
+      })
     );
     setStep("done");
     onImported();
@@ -89,6 +116,15 @@ export function GmailImportModal({ open, onClose, onImported }: Props) {
     setErrorMsg("");
     onClose();
   }
+
+  const newCount = candidates.filter((c, i) => selected.has(i) && !c.isExisting).length;
+  const updateCount = candidates.filter((c, i) => selected.has(i) && c.isExisting && c.priceChanged).length;
+  const actionLabel =
+    newCount > 0 && updateCount > 0
+      ? `Import ${newCount} new, update ${updateCount} price${updateCount > 1 ? "s" : ""}`
+      : updateCount > 0
+        ? `Update ${updateCount} price${updateCount > 1 ? "s" : ""}`
+        : `Import ${newCount} subscription${newCount !== 1 ? "s" : ""}`;
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
@@ -151,7 +187,7 @@ export function GmailImportModal({ open, onClose, onImported }: Props) {
                 {candidates.map((c, i) => (
                   <li
                     key={i}
-                    className="flex items-center gap-3 py-2 cursor-pointer"
+                    className={`flex items-center gap-3 py-2 cursor-pointer ${c.isExisting && !c.priceChanged ? "opacity-50" : ""}`}
                     onClick={() => toggle(i)}
                   >
                     {selected.has(i) ? (
@@ -160,19 +196,43 @@ export function GmailImportModal({ open, onClose, onImported }: Props) {
                       <Square className="h-4 w-4 text-muted-foreground shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{c.serviceName}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Renews {c.renewalDate}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium truncate">{c.serviceName}</p>
+                        {c.isExisting && !c.priceChanged && (
+                          <Badge variant="outline" className="text-[10px] shrink-0">Already tracked</Badge>
+                        )}
+                        {c.isExisting && c.priceChanged && (
+                          <Badge variant="secondary" className="text-[10px] shrink-0 bg-amber-50 text-amber-700 border-amber-200">Price change</Badge>
+                        )}
+                      </div>
+                      {c.isExisting && c.priceChanged && c.existingAmountCents != null ? (
+                        <p className="text-xs text-amber-600 flex items-center gap-1">
+                          <span className="line-through text-muted-foreground">
+                            {c.currency} {(c.existingAmountCents / 100).toFixed(2)}
+                          </span>
+                          <ArrowRight className="h-3 w-3" />
+                          <span className="font-medium">{c.currency} {c.amount.toFixed(2)}</span>
+                          <span className={c.newAmountCents! > c.existingAmountCents ? "text-red-600" : "text-green-600"}>
+                            ({c.newAmountCents! > c.existingAmountCents ? "+" : ""}
+                            {((c.newAmountCents! - c.existingAmountCents) / 100).toFixed(2)})
+                          </span>
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          Renews {c.renewalDate}
+                        </p>
+                      )}
                     </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-medium">
-                        {c.currency} {c.amount.toFixed(2)}
-                      </p>
-                      <Badge variant="secondary" className="text-xs">
-                        {c.billingCycle}
-                      </Badge>
-                    </div>
+                    {!(c.isExisting && c.priceChanged) && (
+                      <div className="text-right shrink-0">
+                        <p className="text-sm font-medium">
+                          {c.currency} {c.amount.toFixed(2)}
+                        </p>
+                        <Badge variant="secondary" className="text-xs">
+                          {c.billingCycle}
+                        </Badge>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -184,9 +244,9 @@ export function GmailImportModal({ open, onClose, onImported }: Props) {
               </Button>
               <Button
                 onClick={importSelected}
-                disabled={selected.size === 0}
+                disabled={newCount + updateCount === 0}
               >
-                Import {selected.size} subscription{selected.size !== 1 ? "s" : ""}
+                {actionLabel}
               </Button>
             </DialogFooter>
           </div>
@@ -204,7 +264,11 @@ export function GmailImportModal({ open, onClose, onImported }: Props) {
         {step === "done" && (
           <div className="space-y-3 py-2 text-center">
             <p className="text-sm font-medium text-green-600">
-              {selected.size} subscription{selected.size !== 1 ? "s" : ""} imported successfully.
+              {newCount > 0 && `${newCount} subscription${newCount !== 1 ? "s" : ""} imported`}
+              {newCount > 0 && updateCount > 0 && ", "}
+              {updateCount > 0 && `${updateCount} price${updateCount !== 1 ? "s" : ""} updated`}
+              {newCount === 0 && updateCount === 0 && "Done"}
+              .
             </p>
             <Button onClick={handleClose} className="w-full">
               Done
