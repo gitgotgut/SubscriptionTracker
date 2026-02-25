@@ -7,6 +7,9 @@ import {
   ArrowRight,
   Check,
   Layers,
+  Mail,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 
 export default async function Home() {
@@ -169,6 +172,61 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* ─── Gmail import ─── */}
+        <section className="py-20">
+          <div className="max-w-5xl mx-auto px-6">
+            <div className="rounded-2xl border border-blue-100 bg-blue-50 p-10 flex flex-col md:flex-row items-start gap-10">
+              <div className="flex-1">
+                <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-medium text-blue-700 mb-5">
+                  <Sparkles className="h-3.5 w-3.5" /> AI-powered import
+                </div>
+                <h2 className="text-2xl font-bold tracking-tight mb-3">
+                  Import subscriptions straight from Gmail
+                </h2>
+                <p className="text-gray-600 text-sm leading-relaxed mb-6">
+                  Connect your Gmail account and let AI scan your receipts and
+                  billing emails. In seconds it detects your recurring
+                  subscriptions — you review the list and pick exactly what to
+                  import. No manual entry needed.
+                </p>
+                <Link
+                  href="/gmail"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
+                >
+                  How the Gmail integration works <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+              <div className="flex-shrink-0 w-full md:w-64 space-y-3">
+                {[
+                  {
+                    icon: <Mail className="h-4 w-4 text-blue-600" />,
+                    title: "Read-only access",
+                    desc: "We never send, delete, or modify any email.",
+                  },
+                  {
+                    icon: <Sparkles className="h-4 w-4 text-blue-600" />,
+                    title: "AI does the reading",
+                    desc: "Billing emails are parsed by AI — no human ever sees them.",
+                  },
+                  {
+                    icon: <ShieldCheck className="h-4 w-4 text-blue-600" />,
+                    title: "Nothing is stored",
+                    desc: "Email content is never saved. Only the subscriptions you approve are imported.",
+                  },
+                ].map((item) => (
+                  <div key={item.title} className="flex items-start gap-3 rounded-xl border border-blue-100 bg-white p-4">
+                    <div className="mt-0.5 shrink-0">{item.icon}</div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{item.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ─── How it works ─── */}
         <section className="py-20">
           <div className="max-w-3xl mx-auto px-6 text-center">
@@ -254,6 +312,7 @@ export default async function Home() {
                 <ul className="space-y-1.5">
                   <li><Link href="/register" className="hover:text-gray-600 transition-colors">Get started</Link></li>
                   <li><Link href="/login" className="hover:text-gray-600 transition-colors">Sign in</Link></li>
+                  <li><Link href="/gmail" className="hover:text-gray-600 transition-colors">Gmail integration</Link></li>
                 </ul>
               </div>
               <div>
