@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DashboardPreview } from "@/components/dashboard-preview";
 import {
   CreditCard,
   BarChart3,
@@ -51,46 +52,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ─── Dashboard preview placeholder ─── */}
+        {/* ─── Dashboard preview (animated) ─── */}
         <section className="max-w-4xl mx-auto px-6 pb-24">
-          <div className="rounded-2xl border border-gray-100 bg-gray-50 overflow-hidden shadow-sm">
-            <div className="flex items-center gap-1.5 px-4 py-3 border-b border-gray-200 bg-white">
-              <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-              <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
-              <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
-              <span className="ml-4 flex-1 rounded bg-gray-100 h-5 max-w-xs text-xs text-gray-400 flex items-center px-3">
-                hugo.app/dashboard
-              </span>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-gray-200 bg-white p-4">
-                  <p className="text-xs text-gray-400 mb-1">Monthly spend</p>
-                  <p className="text-2xl font-bold text-gray-900">$84.97</p>
-                </div>
-                <div className="rounded-xl border border-gray-200 bg-white p-4">
-                  <p className="text-xs text-gray-400 mb-1">Annual spend</p>
-                  <p className="text-2xl font-bold text-gray-900">$1,019.64</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {[
-                  { name: "Netflix", cat: "Streaming", amount: "$15.99/mo", color: "bg-purple-100 text-purple-700" },
-                  { name: "Spotify", cat: "Streaming", amount: "$9.99/mo", color: "bg-purple-100 text-purple-700" },
-                  { name: "Gym membership", cat: "Fitness", amount: "$34.99/mo", color: "bg-green-100 text-green-700" },
-                  { name: "HelloFresh", cat: "Food", amount: "$79.99/mo", color: "bg-orange-100 text-orange-700" },
-                ].map((item) => (
-                  <div key={item.name} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3">
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${item.color}`}>
-                      {item.cat}
-                    </span>
-                    <span className="flex-1 text-sm font-medium text-gray-800">{item.name}</span>
-                    <span className="text-sm font-semibold text-gray-900">{item.amount}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <DashboardPreview />
         </section>
 
         {/* ─── Features ─── */}
