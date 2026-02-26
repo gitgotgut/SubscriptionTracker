@@ -5,7 +5,7 @@ const PUBLIC_PATHS = new Set(["/", "/login", "/register", "/gmail"]);
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
-  if (!req.auth && !PUBLIC_PATHS.has(pathname)) {
+  if (!req.auth && !PUBLIC_PATHS.has(pathname) && !pathname.startsWith("/features/")) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 });

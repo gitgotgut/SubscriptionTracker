@@ -1,57 +1,22 @@
 import Link from "next/link";
-import { auth } from "@/auth";
 import {
   CreditCard,
   BarChart3,
   CalendarCheck,
   ArrowRight,
   Check,
-  Layers,
   Mail,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import { MarketingHeader } from "@/components/marketing-header";
+import { MarketingFooter } from "@/components/marketing-footer";
 
-export default async function Home() {
-  const session = await auth();
-
+export default function Home() {
   return (
     <div className="min-h-screen bg-white text-gray-900 flex flex-col">
 
-      {/* ─── Header ─── */}
-      <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Layers className="h-5 w-5 text-blue-600" />
-            <span className="font-semibold tracking-tight">Subtrack</span>
-          </div>
-          <nav className="flex items-center gap-3">
-            {session ? (
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-              >
-                Dashboard <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/register"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-                >
-                  Get started
-                </Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
+      <MarketingHeader />
 
       <main className="flex-1">
 
@@ -89,7 +54,6 @@ export default async function Home() {
         {/* ─── Dashboard preview placeholder ─── */}
         <section className="max-w-4xl mx-auto px-6 pb-24">
           <div className="rounded-2xl border border-gray-100 bg-gray-50 overflow-hidden shadow-sm">
-            {/* Mock browser chrome */}
             <div className="flex items-center gap-1.5 px-4 py-3 border-b border-gray-200 bg-white">
               <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
               <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
@@ -98,7 +62,6 @@ export default async function Home() {
                 subtrack.app/dashboard
               </span>
             </div>
-            {/* Mock dashboard */}
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-gray-200 bg-white p-4">
@@ -293,44 +256,7 @@ export default async function Home() {
 
       </main>
 
-      {/* ─── Footer ─── */}
-      <footer className="border-t border-gray-100 bg-white">
-        <div className="max-w-5xl mx-auto px-6 py-10">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Layers className="h-4 w-4 text-blue-600" />
-                <span className="font-semibold text-sm tracking-tight">Subtrack</span>
-              </div>
-              <p className="text-xs text-gray-400 max-w-xs">
-                A simple tool to keep every subscription in one place and know exactly what you&apos;re spending.
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-6 text-xs text-gray-400">
-              <div>
-                <p className="font-medium text-gray-600 mb-2">Product</p>
-                <ul className="space-y-1.5">
-                  <li><Link href="/register" className="hover:text-gray-600 transition-colors">Get started</Link></li>
-                  <li><Link href="/login" className="hover:text-gray-600 transition-colors">Sign in</Link></li>
-                  <li><Link href="/gmail" className="hover:text-gray-600 transition-colors">Gmail integration</Link></li>
-                </ul>
-              </div>
-              <div>
-                <p className="font-medium text-gray-600 mb-2">Legal</p>
-                <ul className="space-y-1.5">
-                  <li><span className="cursor-default">Privacy policy</span></li>
-                  <li><span className="cursor-default">Terms of service</span></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="mt-8 pt-6 border-t border-gray-100">
-            <p className="text-xs text-gray-400">
-              © {new Date().getFullYear()} Subtrack. Built to keep your subscriptions honest.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter />
 
     </div>
   );

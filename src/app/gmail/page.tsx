@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  Layers,
   ArrowRight,
   Mail,
   ShieldCheck,
@@ -10,6 +9,8 @@ import {
   Ban,
   Check,
 } from "lucide-react";
+import { MarketingHeader } from "@/components/marketing-header";
+import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata = {
   title: "Gmail Integration — Subtrack",
@@ -21,21 +22,7 @@ export default function GmailPage() {
   return (
     <div className="min-h-screen bg-white text-gray-900 flex flex-col">
 
-      {/* ─── Header ─── */}
-      <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Layers className="h-5 w-5 text-blue-600" />
-            <span className="font-semibold tracking-tight">Subtrack</span>
-          </Link>
-          <Link
-            href="/register"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-          >
-            Get started <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-      </header>
+      <MarketingHeader />
 
       <main className="flex-1">
 
@@ -125,36 +112,11 @@ export default function GmailPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {[
-                    {
-                      data: "Gmail OAuth tokens",
-                      stored: "Yes",
-                      yes: true,
-                      why: "Needed to call the Gmail API on your behalf when you trigger a scan.",
-                    },
-                    {
-                      data: "Email subject, sender, date",
-                      stored: "No",
-                      yes: false,
-                      why: "Read into memory during the scan, then discarded immediately.",
-                    },
-                    {
-                      data: "Email body content",
-                      stored: "No",
-                      yes: false,
-                      why: "Only a short excerpt is passed to the AI. Never written to our database.",
-                    },
-                    {
-                      data: "AI-parsed subscription candidates",
-                      stored: "No",
-                      yes: false,
-                      why: "Shown in the review panel only. Discarded when you close the modal.",
-                    },
-                    {
-                      data: "Subscriptions you choose to import",
-                      stored: "Yes",
-                      yes: true,
-                      why: "Saved as normal subscription records in your account — same as adding manually.",
-                    },
+                    { data: "Gmail OAuth tokens", stored: "Yes", yes: true, why: "Needed to call the Gmail API on your behalf when you trigger a scan." },
+                    { data: "Email subject, sender, date", stored: "No", yes: false, why: "Read into memory during the scan, then discarded immediately." },
+                    { data: "Email body content", stored: "No", yes: false, why: "Only a short excerpt is passed to the AI. Never written to our database." },
+                    { data: "AI-parsed subscription candidates", stored: "No", yes: false, why: "Shown in the review panel only. Discarded when you close the modal." },
+                    { data: "Subscriptions you choose to import", stored: "Yes", yes: true, why: "Saved as normal subscription records in your account — same as adding manually." },
                   ].map((row) => (
                     <tr key={row.data}>
                       <td className="px-5 py-3 text-gray-800">{row.data}</td>
@@ -210,22 +172,7 @@ export default function GmailPage() {
 
       </main>
 
-      {/* ─── Footer ─── */}
-      <footer className="border-t border-gray-100 bg-white">
-        <div className="max-w-5xl mx-auto px-6 py-8">
-          <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-            <Link href="/" className="flex items-center gap-2">
-              <Layers className="h-4 w-4 text-blue-600" />
-              <span className="font-semibold text-sm tracking-tight">Subtrack</span>
-            </Link>
-            <div className="flex gap-6 text-xs text-gray-400">
-              <Link href="/" className="hover:text-gray-600 transition-colors">Home</Link>
-              <Link href="/register" className="hover:text-gray-600 transition-colors">Get started</Link>
-              <Link href="/login" className="hover:text-gray-600 transition-colors">Sign in</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter />
 
     </div>
   );
