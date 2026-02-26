@@ -36,7 +36,7 @@ export default function PricingPage() {
             <div className="bg-blue-600 px-8 py-6 text-white text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-200 mb-1">Free plan</p>
               <p className="text-5xl font-bold mb-1">$0</p>
-              <p className="text-sm text-blue-200">forever · no card needed</p>
+              <p className="text-sm text-blue-200">No card needed</p>
             </div>
             <div className="px-8 py-8">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5">

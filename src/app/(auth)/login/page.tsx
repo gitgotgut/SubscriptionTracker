@@ -149,7 +149,7 @@ export default function LoginPage() {
           </p>
           <ul className="space-y-3">
             {[
-              "Free forever — no credit card needed",
+              "No credit card needed",
               "Gmail & Outlook AI import",
               "Email reminders before renewals",
               "Household sharing for families",

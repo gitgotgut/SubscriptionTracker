@@ -236,7 +236,7 @@ export default function Home() {
               Create free account <ArrowRight className="h-4 w-4" />
             </Link>
             <ul className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-blue-200">
-              {["Free forever", "No credit card", "Delete anytime"].map((t) => (
+              {["No credit card", "Delete anytime"].map((t) => (
                 <li key={t} className="flex items-center gap-1.5">
                   <Check className="h-3.5 w-3.5" /> {t}
                 </li>
