@@ -2,13 +2,14 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing-header";
 import { MarketingFooter } from "@/components/marketing-footer";
+import { FaqAccordion } from "@/components/faq-accordion";
 
 export const metadata = {
   title: "FAQ — Hugo",
   description: "Frequently asked questions about Hugo — the free subscription tracker.",
 };
 
-const FAQS: { q: string; a: React.ReactNode }[] = [
+const FAQS = [
   {
     q: "Is Hugo really free?",
     a: "Yes. Hugo is completely free with no hidden tiers, no feature limits, and no expiry. Every feature — including Gmail import, Outlook import, household sharing, and email reminders — is available to all users at no cost.",
@@ -51,7 +52,7 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
   },
   {
     q: "Can I delete my account?",
-    a: <>Yes. You can permanently delete your account and all associated data from the dashboard settings at any time. Deletion is immediate and irreversible — there is no recovery period. If you want to export your data first, contact us before deleting.</>,
+    a: "Yes. You can permanently delete your account and all associated data from the dashboard settings at any time. Deletion is immediate and irreversible — there is no recovery period.",
   },
   {
     q: "Is my data secure?",
@@ -66,7 +67,7 @@ export default function FAQPage() {
 
       <main className="flex-1">
 
-        {/* ─── Hero ─── */}
+        {/* Hero */}
         <section className="max-w-2xl mx-auto px-6 pt-20 pb-14">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-5">
             Frequently asked questions
@@ -76,19 +77,12 @@ export default function FAQPage() {
           </p>
         </section>
 
-        {/* ─── Questions ─── */}
+        {/* Accordion */}
         <section className="max-w-2xl mx-auto px-6 pb-20">
-          <div className="divide-y divide-gray-100">
-            {FAQS.map((item) => (
-              <div key={item.q} className="py-6">
-                <h2 className="font-semibold text-gray-900 mb-2">{item.q}</h2>
-                <p className="text-sm text-gray-500 leading-relaxed">{item.a}</p>
-              </div>
-            ))}
-          </div>
+          <FaqAccordion items={FAQS} />
         </section>
 
-        {/* ─── CTA ─── */}
+        {/* CTA */}
         <section className="bg-gray-50 border-t border-gray-100 py-16">
           <div className="max-w-2xl mx-auto px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
