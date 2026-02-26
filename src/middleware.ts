@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
-const PUBLIC_PATHS = new Set(["/", "/login", "/register", "/gmail", "/outlook", "/forgot-password", "/reset-password"]);
+const PUBLIC_PATHS = new Set(["/", "/login", "/register", "/gmail", "/outlook", "/pricing", "/about", "/faq", "/forgot-password", "/reset-password"]);
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;

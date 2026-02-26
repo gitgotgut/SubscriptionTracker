@@ -43,6 +43,16 @@ export async function MarketingHeader() {
               </div>
             </div>
           </div>
+
+          <Link href="/pricing" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 py-2">
+            Pricing
+          </Link>
+          <Link href="/about" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 py-2">
+            About
+          </Link>
+          <Link href="/faq" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 py-2">
+            FAQ
+          </Link>
         </div>
 
         <nav className="flex items-center gap-3">

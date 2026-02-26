@@ -22,6 +22,14 @@ export function MarketingFooter() {
               <ul className="space-y-1.5">
                 <li><Link href="/register" className="hover:text-gray-600 transition-colors">Get started</Link></li>
                 <li><Link href="/login" className="hover:text-gray-600 transition-colors">Sign in</Link></li>
+                <li><Link href="/pricing" className="hover:text-gray-600 transition-colors">Pricing</Link></li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-medium text-gray-600 mb-2">Company</p>
+              <ul className="space-y-1.5">
+                <li><Link href="/about" className="hover:text-gray-600 transition-colors">About</Link></li>
+                <li><Link href="/faq" className="hover:text-gray-600 transition-colors">FAQ</Link></li>
               </ul>
             </div>
             <div>
