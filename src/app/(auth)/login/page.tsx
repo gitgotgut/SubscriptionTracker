@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -14,12 +14,16 @@ function LoginForm() {
   const params = useSearchParams();
   const next = params.get("next");
   const hint = params.get("hint");
-  const registered = params.get("registered");
 
   const [email, setEmail] = useState(hint ?? "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showRegistered, setShowRegistered] = useState(false);
+
+  useEffect(() => {
+    if (params.get("registered")) setShowRegistered(true);
+  }, [params]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -67,7 +71,7 @@ function LoginForm() {
         }
       </p>
 
-      {registered && (
+      {showRegistered && (
         <div className="mb-4 text-sm text-green-700 bg-green-50 border border-green-100 rounded-lg px-4 py-3">
           Account created — sign in to get started.
         </div>
