@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { centsToDisplay } from "@/lib/utils";
 import { format } from "date-fns";
+import { SubscriptionLogo } from "@/components/subscription-logo";
 
 export type SubscriptionFormData = {
   name: string; category: string; amount: string; currency: string;
@@ -82,7 +83,10 @@ export function SubscriptionForm({ initial, householdId, onSubmit, onCancel }: P
 
       <div className="space-y-2">
         <Label htmlFor="sub-name">Name</Label>
-        <Input id="sub-name" placeholder="e.g. Netflix" value={name} onChange={(e) => setName(e.target.value)} required />
+        <div className="flex items-center gap-2">
+          <SubscriptionLogo name={name} size={32} />
+          <Input id="sub-name" placeholder="e.g. Netflix" value={name} onChange={(e) => setName(e.target.value)} required className="flex-1" />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

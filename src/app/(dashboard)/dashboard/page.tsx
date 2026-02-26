@@ -17,6 +17,7 @@ import { SpendChangeBadge } from "@/components/spend-change-badge";
 import { GmailImportModal } from "@/components/gmail-import-modal";
 import { OutlookImportModal } from "@/components/outlook-import-modal";
 import { HouseholdPanel } from "@/components/household-panel";
+import { SubscriptionLogo } from "@/components/subscription-logo";
 import { toMonthlyCents, centsToDisplay } from "@/lib/utils";
 
 type Subscription = SubForForm & {
@@ -322,6 +323,7 @@ export default function DashboardPage() {
                             onChange={() => setExcluded(prev => { const next = new Set(prev); next.has(sub.id) ? next.delete(sub.id) : next.add(sub.id); return next; })}
                             className="h-4 w-4 rounded border-gray-300 shrink-0" />
                         )}
+                        <SubscriptionLogo name={sub.name} size={32} />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-medium truncate">{sub.name}</span>
