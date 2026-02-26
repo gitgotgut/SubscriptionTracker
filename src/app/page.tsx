@@ -135,57 +135,84 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ─── Gmail import ─── */}
+        {/* ─── Email import ─── */}
         <section className="py-20">
           <div className="max-w-5xl mx-auto px-6">
-            <div className="rounded-2xl border border-blue-100 bg-blue-50 p-10 flex flex-col md:flex-row items-start gap-10">
-              <div className="flex-1">
-                <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-medium text-blue-700 mb-5">
-                  <Sparkles className="h-3.5 w-3.5" /> AI-powered import
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 mb-4">
+                <Sparkles className="h-3.5 w-3.5" /> AI-powered import
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight mb-3">
+                Import from your inbox automatically
+              </h2>
+              <p className="text-gray-500 text-sm max-w-xl mx-auto leading-relaxed">
+                Connect Gmail or Outlook and let AI scan your receipts and billing emails.
+                In seconds it detects your recurring subscriptions — you review and approve. No manual entry needed.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Gmail card */}
+              <div className="rounded-2xl border border-blue-100 bg-blue-50 p-8 flex flex-col">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="h-10 w-10 rounded-xl bg-white border border-blue-100 flex items-center justify-center shrink-0">
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                      <path d="M22 6C22 4.9 21.1 4 20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6ZM20 6L12 11L4 6H20ZM20 18H4V8L12 13L20 8V18Z" fill="#EA4335"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">Gmail</p>
+                    <p className="text-xs text-gray-500">Google account</p>
+                  </div>
                 </div>
-                <h2 className="text-2xl font-bold tracking-tight mb-3">
-                  Import subscriptions straight from Gmail
-                </h2>
-                <p className="text-gray-600 text-sm leading-relaxed mb-6">
-                  Connect your Gmail account and let AI scan your receipts and
-                  billing emails. In seconds it detects your recurring
-                  subscriptions — you review the list and pick exactly what to
-                  import. No manual entry needed.
+                <p className="text-sm text-gray-600 leading-relaxed mb-6 flex-1">
+                  Connect your Google account. Hugo searches your last 6 months of Gmail for billing-related emails and surfaces your active subscriptions.
                 </p>
                 <Link
                   href="/gmail"
                   className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
                 >
-                  How the Gmail integration works <ArrowRight className="h-3.5 w-3.5" />
+                  How Gmail import works <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
-              <div className="flex-shrink-0 w-full md:w-64 space-y-3">
-                {[
-                  {
-                    icon: <Mail className="h-4 w-4 text-blue-600" />,
-                    title: "Read-only access",
-                    desc: "We never send, delete, or modify any email.",
-                  },
-                  {
-                    icon: <Sparkles className="h-4 w-4 text-blue-600" />,
-                    title: "AI does the reading",
-                    desc: "Billing emails are parsed by AI — no human ever sees them.",
-                  },
-                  {
-                    icon: <ShieldCheck className="h-4 w-4 text-blue-600" />,
-                    title: "Nothing is stored",
-                    desc: "Email content is never saved. Only the subscriptions you approve are imported.",
-                  },
-                ].map((item) => (
-                  <div key={item.title} className="flex items-start gap-3 rounded-xl border border-blue-100 bg-white p-4">
-                    <div className="mt-0.5 shrink-0">{item.icon}</div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">{item.title}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{item.desc}</p>
-                    </div>
+
+              {/* Outlook card */}
+              <div className="rounded-2xl border border-blue-100 bg-blue-50 p-8 flex flex-col">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="h-10 w-10 rounded-xl bg-white border border-blue-100 flex items-center justify-center shrink-0">
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                      <rect x="2" y="3" width="13" height="18" rx="2" fill="#0078D4"/>
+                      <rect x="9" y="7" width="13" height="10" rx="1.5" fill="#28A8E8"/>
+                      <path d="M9 7L15.5 12L22 7" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+                    </svg>
                   </div>
-                ))}
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">Outlook</p>
+                    <p className="text-xs text-gray-500">Microsoft account · Hotmail · Live</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed mb-6 flex-1">
+                  Connect your Microsoft account. Hugo searches your Outlook, Hotmail, or Live inbox for receipts and billing emails to detect recurring charges.
+                </p>
+                <Link
+                  href="/outlook"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
+                >
+                  How Outlook import works <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
+            </div>
+
+            {/* Shared privacy note */}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-500">
+              {[
+                { icon: <Mail className="h-3.5 w-3.5" />, text: "Read-only access — we never send or delete emails" },
+                { icon: <Sparkles className="h-3.5 w-3.5" />, text: "AI parsing — no human ever sees your inbox" },
+                { icon: <ShieldCheck className="h-3.5 w-3.5" />, text: "Email content is never stored" },
+              ].map((item) => (
+                <span key={item.text} className="flex items-center gap-1.5">
+                  {item.icon} {item.text}
+                </span>
+              ))}
             </div>
           </div>
         </section>

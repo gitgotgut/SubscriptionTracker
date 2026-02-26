@@ -1,5 +1,6 @@
 import {
   Mail,
+  MailOpen,
   Bell,
   BarChart3,
   TrendingUp,
@@ -19,6 +20,7 @@ export type Feature = {
 
 export const FEATURES: Feature[] = [
   { name: "Gmail AI Import", href: "/gmail", icon: Mail, description: "Auto-detect subscriptions from receipts" },
+  { name: "Outlook AI Import", href: "/outlook", icon: MailOpen, description: "Auto-detect subscriptions from Outlook" },
   { name: "Email Reminders", href: "/features/email-reminders", icon: Bell, description: "Renewal alerts and trial expiry warnings" },
   { name: "Spending Insights", href: "/features/spending-insights", icon: BarChart3, description: "Monthly trends and spending analysis" },
   { name: "Price Detection", href: "/features/price-detection", icon: TrendingUp, description: "Know when subscription prices change" },
