@@ -14,9 +14,12 @@ model User {
   passwordHash    String
   displayCurrency    String         @default("USD")
   householdId        String?
-  gmailAccessToken   String?
-  gmailRefreshToken  String?
-  gmailTokenExpiry   DateTime?
+  gmailAccessToken      String?
+  gmailRefreshToken     String?
+  gmailTokenExpiry      DateTime?
+  outlookAccessToken    String?
+  outlookRefreshToken   String?
+  outlookTokenExpiry    DateTime?
   emailReminders        Boolean        @default(true)
   passwordResetToken    String?        @unique
   passwordResetExpiry   DateTime?

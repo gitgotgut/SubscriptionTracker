@@ -15,6 +15,7 @@ import { SpendingChart } from "@/components/spending-chart";
 import { SpendingTrendChart } from "@/components/spending-trend-chart";
 import { SpendChangeBadge } from "@/components/spend-change-badge";
 import { GmailImportModal } from "@/components/gmail-import-modal";
+import { OutlookImportModal } from "@/components/outlook-import-modal";
 import { HouseholdPanel } from "@/components/household-panel";
 import { toMonthlyCents, centsToDisplay } from "@/lib/utils";
 
@@ -70,6 +71,9 @@ export default function DashboardPage() {
   const [gmailConnected, setGmailConnected] = useState(false);
   const [gmailModalOpen, setGmailModalOpen] = useState(false);
   const [gmailNotice, setGmailNotice] = useState<string | null>(null);
+  // Outlook
+  const [outlookConnected, setOutlookConnected] = useState(false);
+  const [outlookModalOpen, setOutlookModalOpen] = useState(false);
   const [emailReminders, setEmailReminders] = useState(true);
   // User
   const [userId, setUserId] = useState<string | null>(null);
@@ -89,17 +93,22 @@ export default function DashboardPage() {
       if (u?.displayCurrency) setDisplayCurrency(u.displayCurrency);
       if (u?.householdId) setHouseholdId(u.householdId);
       setGmailConnected(!!u?.gmailConnected);
+      setOutlookConnected(!!u?.outlookConnected);
       if (u?.emailReminders !== undefined) setEmailReminders(u.emailReminders);
     });
     // Show a notice if Google redirected back with a status param
     const params = new URLSearchParams(window.location.search);
     const gmailStatus = params.get("gmail");
+    const outlookStatus = params.get("outlook");
     const joined = params.get("joined");
     if (gmailStatus === "connected") setGmailNotice("Gmail connected successfully.");
     else if (gmailStatus === "denied") setGmailNotice("Gmail access was denied.");
     else if (gmailStatus === "error") setGmailNotice("Gmail connection failed. Please try again.");
+    else if (outlookStatus === "connected") { setOutlookConnected(true); setGmailNotice("Outlook connected successfully."); }
+    else if (outlookStatus === "denied") setGmailNotice("Outlook access was denied.");
+    else if (outlookStatus === "error") setGmailNotice("Outlook connection failed. Please try again.");
     else if (joined === "1") setGmailNotice("You've joined the household!");
-    if (gmailStatus || joined) window.history.replaceState({}, "", "/dashboard");
+    if (gmailStatus || outlookStatus || joined) window.history.replaceState({}, "", "/dashboard");
     fetch("/api/exchange-rates").then(r => r.json()).then(d => {
       setRates(d.rates ?? { USD: 1 });
       setRatesFallback(d.fallback ?? false);
@@ -193,6 +202,17 @@ export default function DashboardPage() {
                 <Mail className="h-3.5 w-3.5" />Connect Gmail
               </Button>
             )}
+            {outlookConnected ? (
+              <Button variant="ghost" size="sm" className="text-xs gap-1 text-blue-700"
+                onClick={async () => { await fetch("/api/outlook/disconnect", { method: "DELETE" }); setOutlookConnected(false); }}>
+                <Mail className="h-3.5 w-3.5" />Outlook
+              </Button>
+            ) : (
+              <Button variant="ghost" size="sm" className="text-xs gap-1"
+                onClick={() => { window.location.href = "/api/outlook/connect"; }}>
+                <Mail className="h-3.5 w-3.5" />Connect Outlook
+              </Button>
+            )}
             <Button variant="ghost" size="sm" className="text-xs gap-1"
               onClick={() => setHouseholdOpen(true)}>
               <Users className="h-3.5 w-3.5" />
@@ -262,6 +282,11 @@ export default function DashboardPage() {
                 {gmailConnected && (
                   <Button size="sm" variant="outline" onClick={() => setGmailModalOpen(true)}>
                     <Mail className="h-4 w-4 mr-1" />Import from Gmail
+                  </Button>
+                )}
+                {outlookConnected && (
+                  <Button size="sm" variant="outline" onClick={() => setOutlookModalOpen(true)}>
+                    <Mail className="h-4 w-4 mr-1" />Import from Outlook
                   </Button>
                 )}
                 <Button size="sm" onClick={() => { setEditTarget(null); setModalOpen(true); }}>
@@ -364,6 +389,13 @@ export default function DashboardPage() {
         open={gmailModalOpen}
         onClose={() => setGmailModalOpen(false)}
         onImported={() => { fetchSubscriptions(); setGmailModalOpen(false); }}
+      />
+
+      {/* Outlook import modal */}
+      <OutlookImportModal
+        open={outlookModalOpen}
+        onClose={() => setOutlookModalOpen(false)}
+        onImported={() => { fetchSubscriptions(); setOutlookModalOpen(false); }}
       />
 
       {/* Add/Edit modal */}

@@ -11,10 +11,16 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, email: true, displayCurrency: true, householdId: true, gmailAccessToken: true, emailReminders: true },
+    select: { id: true, email: true, displayCurrency: true, householdId: true, gmailAccessToken: true, outlookAccessToken: true, emailReminders: true },
   });
 
-  return NextResponse.json({ ...user, gmailConnected: !!user?.gmailAccessToken, gmailAccessToken: undefined });
+  return NextResponse.json({
+    ...user,
+    gmailConnected: !!user?.gmailAccessToken,
+    outlookConnected: !!user?.outlookAccessToken,
+    gmailAccessToken: undefined,
+    outlookAccessToken: undefined,
+  });
 }
 
 const updateSchema = z.object({
