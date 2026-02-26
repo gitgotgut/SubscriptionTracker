@@ -17,8 +17,10 @@ model User {
   gmailAccessToken   String?
   gmailRefreshToken  String?
   gmailTokenExpiry   DateTime?
-  emailReminders     Boolean        @default(true)
-  createdAt          DateTime       @default(now())
+  emailReminders        Boolean        @default(true)
+  passwordResetToken    String?        @unique
+  passwordResetExpiry   DateTime?
+  createdAt             DateTime       @default(now())
   subscriptions   Subscription[]
   history         SubscriptionHistory[]
   household       Household?     @relation("HouseholdOwner")

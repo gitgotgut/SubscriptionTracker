@@ -4,7 +4,7 @@ import { MarketingHeader } from "@/components/marketing-header";
 import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata = {
-  title: "Multi-Currency Support — Subtrack",
+  title: "Multi-Currency Support — Hugo",
   description: "Track subscriptions in any currency and see totals converted to your display currency with live exchange rates.",
 };
 
@@ -22,7 +22,7 @@ export default function MultiCurrencyPage() {
             Subscriptions in any currency
           </h1>
           <p className="text-lg text-gray-500 leading-relaxed">
-            Pay for Netflix in USD, a gym in EUR, and software in GBP? Subtrack
+            Pay for Netflix in USD, a gym in EUR, and software in GBP? Hugo
             converts everything to your preferred currency so you see one
             unified total.
           </p>

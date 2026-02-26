@@ -4,7 +4,7 @@ import { MarketingHeader } from "@/components/marketing-header";
 import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata = {
-  title: "Price Change Detection — Subtrack",
+  title: "Price Change Detection — Hugo",
   description: "Automatically detect when your subscriptions change price by re-scanning your Gmail receipts.",
 };
 
@@ -22,7 +22,7 @@ export default function PriceDetectionPage() {
             Catch price increases before they add up
           </h1>
           <p className="text-lg text-gray-500 leading-relaxed">
-            Services quietly raise prices all the time. Subtrack flags changes
+            Services quietly raise prices all the time. Hugo flags changes
             automatically when you re-scan your Gmail, so you never miss a
             silent increase.
           </p>
@@ -34,7 +34,7 @@ export default function PriceDetectionPage() {
               {
                 icon: <Search className="h-5 w-5 text-blue-600" />,
                 title: "Automatic comparison",
-                body: "When you run a Gmail import scan, Subtrack compares every detected subscription against the ones you already track. If the name matches but the price differs, it's flagged as a price change.",
+                body: "When you run a Gmail import scan, Hugo compares every detected subscription against the ones you already track. If the name matches but the price differs, it's flagged as a price change.",
               },
               {
                 icon: <TrendingUp className="h-5 w-5 text-amber-600" />,
@@ -44,7 +44,7 @@ export default function PriceDetectionPage() {
               {
                 icon: <History className="h-5 w-5 text-blue-600" />,
                 title: "One-click update with history",
-                body: "Accept the new price with a single click. Subtrack updates the subscription and records the change in your price history — so you can see exactly when each increase happened over time.",
+                body: "Accept the new price with a single click. Hugo updates the subscription and records the change in your price history — so you can see exactly when each increase happened over time.",
               },
             ].map((item) => (
               <div key={item.title} className="flex gap-5 rounded-xl border border-gray-100 bg-gray-50 p-6">

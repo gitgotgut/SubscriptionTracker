@@ -4,7 +4,7 @@ import { MarketingHeader } from "@/components/marketing-header";
 import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata = {
-  title: "Email Reminders — Subtrack",
+  title: "Email Reminders — Hugo",
   description: "Get notified before subscriptions renew and before free trials convert to paid.",
 };
 
@@ -22,7 +22,7 @@ export default function EmailRemindersPage() {
             Never be surprised by a renewal again
           </h1>
           <p className="text-lg text-gray-500 leading-relaxed">
-            Subtrack sends you a heads-up email before subscriptions renew and
+            Hugo sends you a heads-up email before subscriptions renew and
             before free trials convert to paid — so you can cancel or budget
             before the charge hits.
           </p>
@@ -34,12 +34,12 @@ export default function EmailRemindersPage() {
               {
                 icon: <Clock className="h-5 w-5 text-blue-600" />,
                 title: "7-day renewal heads-up",
-                body: "Every morning, Subtrack checks your upcoming renewals. If anything renews within 7 days, you get a single consolidated email listing each subscription, its amount, and the renewal date.",
+                body: "Every morning, Hugo checks your upcoming renewals. If anything renews within 7 days, you get a single consolidated email listing each subscription, its amount, and the renewal date.",
               },
               {
                 icon: <ShieldAlert className="h-5 w-5 text-amber-600" />,
                 title: "Trial expiry warnings",
-                body: "Tracking a free trial? Subtrack alerts you 3 days before it converts to a paid subscription — including the price it will convert to. This is the single most effective way to avoid unwanted charges.",
+                body: "Tracking a free trial? Hugo alerts you 3 days before it converts to a paid subscription — including the price it will convert to. This is the single most effective way to avoid unwanted charges.",
               },
               {
                 icon: <SlidersHorizontal className="h-5 w-5 text-blue-600" />,
@@ -69,7 +69,7 @@ export default function EmailRemindersPage() {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Proactive, not reactive</h3>
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  Most people discover unwanted charges after they happen. Subtrack
+                  Most people discover unwanted charges after they happen. Hugo
                   flips that — you get the information before the money leaves your
                   account, giving you time to act.
                 </p>

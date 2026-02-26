@@ -41,15 +41,20 @@ export async function POST(req: NextRequest) {
 
   const acceptUrl = `${process.env.NEXTAUTH_URL}/api/household/accept?token=${token}`;
 
-  await resend.emails.send({
-    from: "Subtrack <invites@subtrack.app>",
+  if (!process.env.RESEND_API_KEY) {
+    return NextResponse.json({ error: "Email not configured (missing RESEND_API_KEY)" }, { status: 503 });
+  }
+
+  const fromAddress = process.env.EMAIL_FROM || "Hugo <onboarding@resend.dev>";
+  const { error: sendError } = await resend.emails.send({
+    from: fromAddress,
     to: parsed.data.email,
-    subject: `You've been invited to a Subtrack household`,
+    subject: `You've been invited to a Hugo household`,
     html: `
       <body style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 16px">
         <h2 style="font-size:20px;font-weight:600">You're invited</h2>
         <p style="color:#6b7280;font-size:14px">
-          You've been invited to join <strong>${household.name}</strong> on Subtrack —
+          You've been invited to join <strong>${household.name}</strong> on Hugo —
           a shared space for tracking household subscriptions together.
         </p>
         <a href="${acceptUrl}"
@@ -62,6 +67,10 @@ export async function POST(req: NextRequest) {
       </body>
     `,
   });
+  if (sendError) {
+    console.error("Failed to send invite email:", sendError);
+    return NextResponse.json({ error: sendError.message || "Failed to send invite email" }, { status: 502 });
+  }
 
   return NextResponse.json({ ok: true });
 }

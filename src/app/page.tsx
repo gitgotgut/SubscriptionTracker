@@ -31,7 +31,7 @@ export default function Home() {
             <span className="text-blue-600">One clear view.</span>
           </h1>
           <p className="max-w-xl mx-auto text-lg text-gray-500 mb-10 leading-relaxed">
-            Stop losing track of what you pay for. Subtrack gives you a single,
+            Stop losing track of what you pay for. Hugo gives you a single,
             honest overview of every recurring charge — streaming, fitness,
             software, meal plans, and more.
           </p>
@@ -59,7 +59,7 @@ export default function Home() {
               <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
               <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
               <span className="ml-4 flex-1 rounded bg-gray-100 h-5 max-w-xs text-xs text-gray-400 flex items-center px-3">
-                subtrack.app/dashboard
+                hugo.app/dashboard
               </span>
             </div>
             <div className="p-6 space-y-4">

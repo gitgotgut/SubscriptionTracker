@@ -15,6 +15,7 @@ import { SpendingChart } from "@/components/spending-chart";
 import { SpendingTrendChart } from "@/components/spending-trend-chart";
 import { SpendChangeBadge } from "@/components/spend-change-badge";
 import { GmailImportModal } from "@/components/gmail-import-modal";
+import { HouseholdPanel } from "@/components/household-panel";
 import { toMonthlyCents, centsToDisplay } from "@/lib/utils";
 
 type Subscription = SubForForm & {
@@ -70,6 +71,9 @@ export default function DashboardPage() {
   const [gmailModalOpen, setGmailModalOpen] = useState(false);
   const [gmailNotice, setGmailNotice] = useState<string | null>(null);
   const [emailReminders, setEmailReminders] = useState(true);
+  // User
+  const [userId, setUserId] = useState<string | null>(null);
+  const [householdOpen, setHouseholdOpen] = useState(false);
 
   const fetchSubscriptions = useCallback(async () => {
     const res = await fetch("/api/subscriptions");
@@ -81,6 +85,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetch("/api/me").then(r => r.json()).then(u => {
+      if (u?.id) setUserId(u.id);
       if (u?.displayCurrency) setDisplayCurrency(u.displayCurrency);
       if (u?.householdId) setHouseholdId(u.householdId);
       setGmailConnected(!!u?.gmailConnected);
@@ -89,10 +94,12 @@ export default function DashboardPage() {
     // Show a notice if Google redirected back with a status param
     const params = new URLSearchParams(window.location.search);
     const gmailStatus = params.get("gmail");
+    const joined = params.get("joined");
     if (gmailStatus === "connected") setGmailNotice("Gmail connected successfully.");
     else if (gmailStatus === "denied") setGmailNotice("Gmail access was denied.");
     else if (gmailStatus === "error") setGmailNotice("Gmail connection failed. Please try again.");
-    if (gmailStatus) window.history.replaceState({}, "", "/dashboard");
+    else if (joined === "1") setGmailNotice("You've joined the household!");
+    if (gmailStatus || joined) window.history.replaceState({}, "", "/dashboard");
     fetch("/api/exchange-rates").then(r => r.json()).then(d => {
       setRates(d.rates ?? { USD: 1 });
       setRatesFallback(d.fallback ?? false);
@@ -170,7 +177,7 @@ export default function DashboardPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Layers className="h-5 w-5 text-blue-600" />
-            <span className="font-semibold tracking-tight">Subtrack</span>
+            <span className="font-semibold tracking-tight">Hugo</span>
             {householdName && <span className="text-xs text-muted-foreground border rounded-full px-2 py-0.5 flex items-center gap-1"><Users className="h-3 w-3" />{householdName}</span>}
           </div>
           <div className="flex items-center gap-2">
@@ -186,6 +193,11 @@ export default function DashboardPage() {
                 <Mail className="h-3.5 w-3.5" />Connect Gmail
               </Button>
             )}
+            <Button variant="ghost" size="sm" className="text-xs gap-1"
+              onClick={() => setHouseholdOpen(true)}>
+              <Users className="h-3.5 w-3.5" />
+              {householdName || "Household"}
+            </Button>
             <Button variant="ghost" size="sm" className="text-xs gap-1"
               onClick={async () => {
                 const next = !emailReminders;
@@ -380,6 +392,29 @@ export default function DashboardPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Household panel */}
+      <Dialog open={householdOpen} onOpenChange={setHouseholdOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><Users className="h-4 w-4" /> Household</DialogTitle></DialogHeader>
+          {userId && (
+            <HouseholdPanel
+              userId={userId}
+              onCreated={(id, name) => {
+                setHouseholdId(id);
+                setHouseholdName(name);
+                fetchSubscriptions();
+              }}
+              onLeft={() => {
+                setHouseholdId(null);
+                setHouseholdName(null);
+                fetchSubscriptions();
+                setHouseholdOpen(false);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* History panel */}
       <Dialog open={!!historyTarget} onOpenChange={(o) => { if (!o) { setHistoryTarget(null); setHistoryEntries([]); } }}>

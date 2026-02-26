@@ -10,7 +10,7 @@ export function MarketingFooter() {
           <div>
             <Link href="/" className="flex items-center gap-2 mb-2">
               <Layers className="h-4 w-4 text-blue-600" />
-              <span className="font-semibold text-sm tracking-tight">Subtrack</span>
+              <span className="font-semibold text-sm tracking-tight">Hugo</span>
             </Link>
             <p className="text-xs text-gray-400 max-w-xs">
               A simple tool to keep every subscription in one place and know exactly what you&apos;re spending.
@@ -45,7 +45,7 @@ export function MarketingFooter() {
         </div>
         <div className="mt-8 pt-6 border-t border-gray-100">
           <p className="text-xs text-gray-400">
-            &copy; {new Date().getFullYear()} Subtrack. Built to keep your subscriptions honest.
+            &copy; {new Date().getFullYear()} Hugo. Built to keep your subscriptions honest.
           </p>
         </div>
       </div>

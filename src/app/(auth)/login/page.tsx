@@ -47,7 +47,7 @@ export default function LoginPage() {
         >
           <ArrowLeft className="h-4 w-4" />
           <Layers className="h-4 w-4 text-blue-600" />
-          <span className="font-semibold tracking-tight">Subtrack</span>
+          <span className="font-semibold tracking-tight">Hugo</span>
         </Link>
       </header>
       <div className="flex-1 flex items-center justify-center p-4">
@@ -74,7 +74,12 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                  Forgot password?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"

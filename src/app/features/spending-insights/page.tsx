@@ -4,7 +4,7 @@ import { MarketingHeader } from "@/components/marketing-header";
 import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata = {
-  title: "Spending Insights — Subtrack",
+  title: "Spending Insights — Hugo",
   description: "See monthly spending trends, category breakdowns, and month-over-month changes at a glance.",
 };
 
@@ -22,7 +22,7 @@ export default function SpendingInsightsPage() {
             Know where your money goes
           </h1>
           <p className="text-lg text-gray-500 leading-relaxed">
-            Subtrack doesn&apos;t just list your subscriptions — it shows you
+            Hugo doesn&apos;t just list your subscriptions — it shows you
             trends, categories, and changes over time so you can make smarter
             spending decisions.
           </p>

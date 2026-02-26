@@ -13,9 +13,9 @@ import { MarketingHeader } from "@/components/marketing-header";
 import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata = {
-  title: "Gmail Integration — Subtrack",
+  title: "Gmail Integration — Hugo",
   description:
-    "Learn how Subtrack uses your Gmail to detect subscriptions, what data we access, and what we never store.",
+    "Learn how Hugo uses your Gmail to detect subscriptions, what data we access, and what we never store.",
 };
 
 export default function GmailPage() {
@@ -35,7 +35,7 @@ export default function GmailPage() {
             How Gmail import works
           </h1>
           <p className="text-lg text-gray-500 leading-relaxed">
-            Subtrack can scan your Gmail receipts to detect recurring
+            Hugo can scan your Gmail receipts to detect recurring
             subscriptions automatically. Here&apos;s exactly what happens — and
             what we never touch.
           </p>
@@ -49,7 +49,7 @@ export default function GmailPage() {
                 icon: <KeyRound className="h-5 w-5 text-blue-600" />,
                 step: "1",
                 title: "You grant read-only access",
-                body: "When you click Connect Gmail, you're taken to Google's own sign-in and consent screen. You decide whether to allow access. Subtrack requests only the minimum permission required: read-only access to your Gmail messages. We cannot send, delete, or modify anything.",
+                body: "When you click Connect Gmail, you're taken to Google's own sign-in and consent screen. You decide whether to allow access. Hugo requests only the minimum permission required: read-only access to your Gmail messages. We cannot send, delete, or modify anything.",
               },
               {
                 icon: <Eye className="h-5 w-5 text-blue-600" />,
@@ -61,19 +61,19 @@ export default function GmailPage() {
                 icon: <Sparkles className="h-5 w-5 text-blue-600" />,
                 step: "3",
                 title: "AI reads and parses the emails",
-                body: "The sender, subject, date, and a short excerpt of each email are sent to an AI model in a single request. The AI identifies recurring subscription charges — service name, amount, billing cycle, and next renewal date. No human at Subtrack ever sees your emails. The raw email content is never written to disk or a database.",
+                body: "The sender, subject, date, and a short excerpt of each email are sent to an AI model in a single request. The AI identifies recurring subscription charges — service name, amount, billing cycle, and next renewal date. No human at Hugo ever sees your emails. The raw email content is never written to disk or a database.",
               },
               {
                 icon: <Check className="h-5 w-5 text-blue-600" />,
                 step: "4",
                 title: "You review and choose what to import",
-                body: "The AI's suggestions appear in a review panel. Every item is pre-selected, but you can uncheck anything you don't want. Only the subscriptions you explicitly approve are saved to your Subtrack account — as ordinary subscription records, identical to ones you'd add manually.",
+                body: "The AI's suggestions appear in a review panel. Every item is pre-selected, but you can uncheck anything you don't want. Only the subscriptions you explicitly approve are saved to your Hugo account — as ordinary subscription records, identical to ones you'd add manually.",
               },
               {
                 icon: <Ban className="h-5 w-5 text-blue-600" />,
                 step: "5",
                 title: "Disconnect any time",
-                body: "You can revoke Subtrack's access to your Gmail at any time by clicking the Gmail button in the dashboard header and choosing Disconnect. This immediately deletes your stored OAuth tokens from our database. You can also revoke access directly from your Google Account at myaccount.google.com/permissions.",
+                body: "You can revoke Hugo's access to your Gmail at any time by clicking the Gmail button in the dashboard header and choosing Disconnect. This immediately deletes your stored OAuth tokens from our database. You can also revoke access directly from your Google Account at myaccount.google.com/permissions.",
               },
             ].map((item) => (
               <div key={item.step} className="flex gap-5 rounded-xl border border-gray-100 bg-gray-50 p-6">
@@ -142,7 +142,7 @@ export default function GmailPage() {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Our privacy commitment</h3>
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  Your inbox is private. Subtrack reads the minimum necessary to
+                  Your inbox is private. Hugo reads the minimum necessary to
                   detect subscriptions — and nothing more. Email content is
                   never logged, never stored, and never shared with anyone
                   except the AI service used for parsing. You are always in

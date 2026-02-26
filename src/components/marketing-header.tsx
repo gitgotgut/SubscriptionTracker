@@ -12,7 +12,7 @@ export async function MarketingHeader() {
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2">
             <Layers className="h-5 w-5 text-blue-600" />
-            <span className="font-semibold tracking-tight">Subtrack</span>
+            <span className="font-semibold tracking-tight">Hugo</span>
           </Link>
 
           {/* Features dropdown */}

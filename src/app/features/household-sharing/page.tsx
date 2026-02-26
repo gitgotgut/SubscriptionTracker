@@ -4,7 +4,7 @@ import { MarketingHeader } from "@/components/marketing-header";
 import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata = {
-  title: "Household Sharing — Subtrack",
+  title: "Household Sharing — Hugo",
   description: "Share subscription tracking with your family or household and keep everyone on the same page.",
 };
 

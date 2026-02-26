@@ -4,7 +4,7 @@ import { MarketingHeader } from "@/components/marketing-header";
 import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata = {
-  title: "Cancel Calculator — Subtrack",
+  title: "Cancel Calculator — Hugo",
   description: "Toggle subscriptions on and off to see exactly how much you'd save by cancelling.",
 };
 

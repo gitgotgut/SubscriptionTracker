@@ -4,7 +4,7 @@ import { MarketingHeader } from "@/components/marketing-header";
 import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata = {
-  title: "Subscription Tracking — Subtrack",
+  title: "Subscription Tracking — Hugo",
   description: "Track all your recurring subscriptions in one clean dashboard — streaming, fitness, software, and more.",
 };
 

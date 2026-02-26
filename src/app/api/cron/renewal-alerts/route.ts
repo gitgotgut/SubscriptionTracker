@@ -137,24 +137,28 @@ export async function GET(req: NextRequest) {
       <html>
         <body style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 16px;color:#111">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:24px">
-            <span style="font-size:18px;font-weight:700;letter-spacing:-0.5px">Subtrack</span>
+            <span style="font-size:18px;font-weight:700;letter-spacing:-0.5px">Hugo</span>
           </div>
           ${renewalSection}
           ${trialSection}
           <div style="margin-top:32px;padding-top:24px;border-top:1px solid #f0f0f0;font-size:12px;color:#9ca3af">
-            You're receiving this because you use Subtrack to track your subscriptions.
+            You're receiving this because you use Hugo to track your subscriptions.
           </div>
         </body>
       </html>
     `;
 
-    await resend.emails.send({
-      from: "Subtrack <alerts@subtrack.app>",
+    const { error: sendError } = await resend.emails.send({
+      from: process.env.EMAIL_FROM || "Hugo <onboarding@resend.dev>",
       to: email,
       subject,
       html,
     });
-    sent++;
+    if (sendError) {
+      console.error(`Failed to send renewal alert to ${email}:`, sendError);
+    } else {
+      sent++;
+    }
   }
 
   return NextResponse.json({ sent });

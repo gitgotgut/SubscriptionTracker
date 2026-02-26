@@ -140,7 +140,7 @@ export function GmailImportModal({ open, onClose, onImported }: Props) {
         {step === "idle" && (
           <div className="space-y-3 py-2">
             <p className="text-sm text-muted-foreground">
-              Subtrack will scan your last 6 months of Gmail receipts and use AI to detect
+              Hugo will scan your last 6 months of Gmail receipts and use AI to detect
               recurring subscriptions. Only you can see your emails — nothing is stored.
             </p>
             <Button onClick={runScan} className="w-full">
