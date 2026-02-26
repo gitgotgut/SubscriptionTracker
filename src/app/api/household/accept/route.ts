@@ -27,10 +27,11 @@ export async function GET(req: NextRequest) {
     const { householdId, invitedEmail } = payload as { householdId: string; invitedEmail: string };
 
     if (session.user.email !== invitedEmail) {
-      return NextResponse.json(
-        { error: "This invite was sent to a different email address" },
-        { status: 403 }
-      );
+      // Logged in as the wrong account — send them to login with the token preserved
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("next", "/api/household/accept" + req.nextUrl.search);
+      loginUrl.searchParams.set("hint", invitedEmail);
+      return NextResponse.redirect(loginUrl);
     }
 
     // Idempotent: upsert member
