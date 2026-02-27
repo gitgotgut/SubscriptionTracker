@@ -28,18 +28,24 @@ export type SubForForm = {
 
 type Props = {
   initial?: SubForForm; householdId?: string | null;
+  defaultCurrency?: string;
   onSubmit: (data: SubscriptionFormData) => Promise<void>; onCancel: () => void;
 };
 
-const CATEGORIES = ["Streaming", "Fitness", "Food", "Software", "Other"];
+const CATEGORIES = [
+  "Streaming", "Music", "Gaming", "News & Media",
+  "Fitness", "Food", "Software", "Cloud Storage",
+  "Education", "VPN & Security", "Productivity", "Shopping", "Other",
+];
 const BILLING_CYCLES = [{ value: "monthly", label: "Monthly" }, { value: "annual", label: "Annual" }];
 const STATUSES = [{ value: "active", label: "Active" }, { value: "paused", label: "Paused" }, { value: "trial", label: "Free trial" }];
+const CURRENCIES = ["USD","EUR","GBP","SEK","NOK","DKK","CHF","CAD","AUD","JPY"];
 
-export function SubscriptionForm({ initial, householdId, onSubmit, onCancel }: Props) {
+export function SubscriptionForm({ initial, householdId, defaultCurrency = "USD", onSubmit, onCancel }: Props) {
   const [name, setName] = useState(initial?.name ?? "");
   const [category, setCategory] = useState(initial?.category ?? "Other");
   const [amount, setAmount] = useState(initial ? centsToDisplay(initial.amountCents) : "");
-  const [currency] = useState(initial?.currency ?? "USD");
+  const [currency, setCurrency] = useState(initial?.currency ?? defaultCurrency);
   const [billingCycle, setBillingCycle] = useState(initial?.billingCycle ?? "monthly");
   const [renewalDate, setRenewalDate] = useState(initial ? format(new Date(initial.renewalDate), "yyyy-MM-dd") : "");
   const [status, setStatus] = useState(initial?.status ?? "active");
@@ -63,7 +69,7 @@ export function SubscriptionForm({ initial, householdId, onSubmit, onCancel }: P
     setError("");
     if (!name.trim()) return setError("Name is required.");
     if (!/^\d+(\.\d{1,2})?$/.test(amount)) return setError("Enter a valid amount (e.g. 9.99).");
-    if (!renewalDate) return setError("Renewal date is required.");
+    if (status !== "paused" && !renewalDate) return setError("Renewal date is required.");
     if (status === "trial" && !trialEndDate) return setError("Trial end date is required.");
     setLoading(true);
     try {
@@ -115,8 +121,14 @@ export function SubscriptionForm({ initial, householdId, onSubmit, onCancel }: P
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="sub-amount">Amount ({currency})</Label>
-          <Input id="sub-amount" placeholder="9.99" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" required />
+          <Label htmlFor="sub-amount">Amount</Label>
+          <div className="flex gap-2">
+            <Select value={currency} onValueChange={setCurrency}>
+              <SelectTrigger className="w-24 shrink-0"><SelectValue /></SelectTrigger>
+              <SelectContent>{CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+            </Select>
+            <Input id="sub-amount" placeholder="9.99" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" required className="flex-1" />
+          </div>
         </div>
       </div>
 
@@ -131,7 +143,7 @@ export function SubscriptionForm({ initial, householdId, onSubmit, onCancel }: P
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="sub-renewal">Next renewal</Label>
-          <Input id="sub-renewal" type="date" value={renewalDate} onChange={(e) => setRenewalDate(e.target.value)} required />
+          <Input id="sub-renewal" type="date" value={renewalDate} onChange={(e) => setRenewalDate(e.target.value)} required={status !== "paused"} />
         </div>
         {status === "trial" && (
           <div className="space-y-2">

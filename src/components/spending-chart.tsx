@@ -11,13 +11,21 @@ type Subscription = {
 
 const COLORS: Record<string, string> = {
   Streaming: "#8b5cf6",
+  Music: "#ec4899",
+  Gaming: "#f59e0b",
+  "News & Media": "#0ea5e9",
   Fitness: "#22c55e",
   Food: "#f97316",
   Software: "#3b82f6",
+  "Cloud Storage": "#14b8a6",
+  Education: "#a855f7",
+  "VPN & Security": "#ef4444",
+  Productivity: "#84cc16",
+  Shopping: "#f43f5e",
   Other: "#6b7280",
 };
 
-export function SpendingChart({ subscriptions }: { subscriptions: Subscription[] }) {
+export function SpendingChart({ subscriptions, formatValue = (s: string) => `$${s}` }: { subscriptions: Subscription[]; formatValue?: (s: string) => string }) {
   if (subscriptions.length === 0) return null;
 
   const byCategory = subscriptions.reduce<Record<string, number>>((acc, sub) => {
@@ -29,7 +37,7 @@ export function SpendingChart({ subscriptions }: { subscriptions: Subscription[]
   const data = Object.entries(byCategory).map(([name, cents]) => ({
     name,
     value: cents,
-    display: `$${centsToDisplay(cents)}/mo`,
+    display: `${formatValue(centsToDisplay(cents))}/mo`,
   }));
 
   return (

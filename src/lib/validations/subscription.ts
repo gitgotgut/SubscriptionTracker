@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-const CATEGORIES = ["Streaming", "Fitness", "Food", "Software", "Other"] as const;
+const CATEGORIES = [
+  "Streaming", "Music", "Gaming", "News & Media",
+  "Fitness", "Food", "Software", "Cloud Storage",
+  "Education", "VPN & Security", "Productivity", "Shopping", "Other",
+] as const;
 const BILLING_CYCLES = ["monthly", "annual"] as const;
 export const STATUSES = ["active", "paused", "trial"] as const;
 
@@ -15,7 +19,7 @@ export const createSubscriptionSchema = z.object({
     .transform((v) => Math.round(parseFloat(v) * 100)),
   currency: z.string().length(3).default("USD"),
   billingCycle: z.enum(BILLING_CYCLES),
-  renewalDate: dateOrDatetime,
+  renewalDate: dateOrDatetime.optional(),
   status: z.enum(STATUSES).default("active"),
   trialEndDate: dateOrDatetime.nullable().optional(),
   notes: z.string().max(200).nullable().optional(),

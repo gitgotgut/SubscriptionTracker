@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       data: {
         ...rest,
         amountCents: amount,
-        renewalDate: new Date(renewalDate),
+        renewalDate: renewalDate ? new Date(renewalDate) : new Date(),
         trialEndDate: trialEndDate ? new Date(trialEndDate) : null,
         monthlySavingsHintCents: monthlySavingsHint ?? null,
         userId: session.user.id,

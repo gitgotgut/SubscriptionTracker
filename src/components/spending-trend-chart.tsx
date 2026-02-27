@@ -13,7 +13,7 @@ import {
 
 type MonthData = { label: string; totalCents: number };
 
-export function SpendingTrendChart() {
+export function SpendingTrendChart({ formatValue = (s: string) => `$${s}` }: { formatValue?: (s: string) => string }) {
   const [data, setData] = useState<MonthData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,12 +45,12 @@ export function SpendingTrendChart() {
           tickFormatter={(v: string) => v.split(" ")[0]}
         />
         <YAxis
-          tickFormatter={(v: number) => `$${fmt(v)}`}
+          tickFormatter={(v: number) => `${formatValue(fmt(v))}`}
           tick={{ fontSize: 11 }}
           width={60}
         />
         <Tooltip
-          formatter={(value: number) => [`$${fmt(value)}`, "Monthly spend"]}
+          formatter={(value: number) => [`${formatValue(fmt(value))}`, "Monthly spend"]}
           labelFormatter={(label: string) => label}
         />
         <Bar dataKey="totalCents" fill="#3b82f6" radius={[4, 4, 0, 0]} />

@@ -19,7 +19,7 @@ import { OutlookImportModal } from "@/components/outlook-import-modal";
 import { HouseholdPanel } from "@/components/household-panel";
 import { SubscriptionLogo } from "@/components/subscription-logo";
 import { getCancelUrl } from "@/lib/cancel-urls";
-import { toMonthlyCents, centsToDisplay } from "@/lib/utils";
+import { toMonthlyCents, centsToDisplay, formatAmount } from "@/lib/utils";
 
 type Subscription = SubForForm & {
   amount: string; readonly?: boolean;
@@ -144,7 +144,7 @@ export default function DashboardPage() {
   async function handleAdd(data: SubscriptionFormData) {
     const res = await fetch("/api/subscriptions", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...data, renewalDate: new Date(data.renewalDate).toISOString(), trialEndDate: data.trialEndDate ? new Date(data.trialEndDate).toISOString() : null }),
+      body: JSON.stringify({ ...data, renewalDate: data.renewalDate ? new Date(data.renewalDate).toISOString() : undefined, trialEndDate: data.trialEndDate ? new Date(data.trialEndDate).toISOString() : null }),
     });
     if (!res.ok) throw new Error("Failed");
     const created = await res.json();
@@ -156,7 +156,7 @@ export default function DashboardPage() {
     if (!editTarget) return;
     const res = await fetch(`/api/subscriptions/${editTarget.id}`, {
       method: "PATCH", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...data, renewalDate: new Date(data.renewalDate).toISOString(), trialEndDate: data.trialEndDate ? new Date(data.trialEndDate).toISOString() : null }),
+      body: JSON.stringify({ ...data, renewalDate: data.renewalDate ? new Date(data.renewalDate).toISOString() : undefined, trialEndDate: data.trialEndDate ? new Date(data.trialEndDate).toISOString() : null }),
     });
     if (!res.ok) throw new Error("Failed");
     const updated = await res.json();
@@ -247,14 +247,14 @@ export default function DashboardPage() {
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Monthly spend</CardTitle></CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">{sym}{centsToDisplay(totalMonthlyCents)}</p>
+              <p className="text-3xl font-bold">{formatAmount(centsToDisplay(totalMonthlyCents), displayCurrency)}</p>
               <SpendChangeBadge />
-              {calcMode && savingCents > 0 && <p className="text-sm text-green-600 font-medium mt-1">Saving {sym}{centsToDisplay(savingCents)}/mo</p>}
+              {calcMode && savingCents > 0 && <p className="text-sm text-green-600 font-medium mt-1">Saving {formatAmount(centsToDisplay(savingCents), displayCurrency)}/mo</p>}
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Annual spend</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold">{sym}{centsToDisplay(totalMonthlyCents * 12)}</p></CardContent>
+            <CardContent><p className="text-3xl font-bold">{formatAmount(centsToDisplay(totalMonthlyCents * 12), displayCurrency)}</p></CardContent>
           </Card>
         </div>
 
@@ -264,11 +264,11 @@ export default function DashboardPage() {
             <div className="lg:col-span-1 space-y-6">
               <Card>
                 <CardHeader><CardTitle className="text-base">By category</CardTitle></CardHeader>
-                <CardContent><SpendingChart subscriptions={calcActiveSubs} /></CardContent>
+                <CardContent><SpendingChart subscriptions={calcActiveSubs} formatValue={(s) => formatAmount(s, displayCurrency)} /></CardContent>
               </Card>
               <Card>
                 <CardHeader><CardTitle className="text-base">Spending trend</CardTitle></CardHeader>
-                <CardContent><SpendingTrendChart /></CardContent>
+                <CardContent><SpendingTrendChart formatValue={(s) => formatAmount(s, displayCurrency)} /></CardContent>
               </Card>
             </div>
           )}
@@ -343,14 +343,16 @@ export default function DashboardPage() {
                         </div>
                         <div className="text-right shrink-0">
                           <p className="font-semibold">
-                            {sub.currency !== "USD" ? "" : "$"}{sub.amount}
+                            {formatAmount(centsToDisplay(convert(sub.amountCents, sub.currency)), displayCurrency)}
                             <span className="text-xs text-muted-foreground ml-1">/{sub.billingCycle === "annual" ? "yr" : "mo"}</span>
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {sym}{centsToDisplay(convert(toMonthlyCents(sub.amountCents, sub.billingCycle), sub.currency))}/mo
-                          </p>
+                          {sub.billingCycle === "annual" && (
+                            <p className="text-xs text-muted-foreground">
+                              {formatAmount(centsToDisplay(convert(toMonthlyCents(sub.amountCents, sub.billingCycle), sub.currency)), displayCurrency)}/mo
+                            </p>
+                          )}
                           {sub.monthlySavingsHintCents != null && sub.monthlySavingsHintCents > 0 && (
-                            <p className="text-xs text-green-600">Save ${centsToDisplay(sub.monthlySavingsHintCents)}/mo annually</p>
+                            <p className="text-xs text-green-600">Save {formatAmount(centsToDisplay(convert(sub.monthlySavingsHintCents, sub.currency)), displayCurrency)}/mo annually</p>
                           )}
                         </div>
                         {!sub.readonly && (
@@ -406,6 +408,7 @@ export default function DashboardPage() {
         <DialogContent>
           <DialogHeader><DialogTitle>{editTarget ? "Edit subscription" : "Add subscription"}</DialogTitle></DialogHeader>
           <SubscriptionForm initial={editTarget ?? undefined} householdId={householdId}
+            defaultCurrency={displayCurrency}
             onSubmit={editTarget ? handleEdit : handleAdd}
             onCancel={() => { setModalOpen(false); setEditTarget(null); }} />
         </DialogContent>
@@ -431,8 +434,8 @@ export default function DashboardPage() {
             >
               <ExternalLink className="h-4 w-4 shrink-0" />
               <span>
-                <span className="font-medium">Cancel on {deleteTarget.name} first?</span>
-                <span className="block text-xs text-blue-500 mt-0.5">Opens the cancellation page — you&apos;ll need to cancel there to stop being charged.</span>
+                <span className="font-medium">Manage your {deleteTarget.name} subscription</span>
+                <span className="block text-xs text-blue-500 mt-0.5">Sign in to {deleteTarget.name} to cancel and stop being charged.</span>
               </span>
             </a>
           )}
