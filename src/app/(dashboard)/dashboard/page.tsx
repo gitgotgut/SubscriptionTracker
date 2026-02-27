@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { signOut } from "next-auth/react";
-import { Plus, LogOut, Pencil, Trash2, History, Layers, TrendingDown, Users, X, Mail, Bell, BellOff } from "lucide-react";
+import { Plus, LogOut, Pencil, Trash2, History, Layers, TrendingDown, Users, X, Mail, Bell, BellOff, ExternalLink } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ import { GmailImportModal } from "@/components/gmail-import-modal";
 import { OutlookImportModal } from "@/components/outlook-import-modal";
 import { HouseholdPanel } from "@/components/household-panel";
 import { SubscriptionLogo } from "@/components/subscription-logo";
+import { getCancelUrl } from "@/lib/cancel-urls";
 import { toMonthlyCents, centsToDisplay } from "@/lib/utils";
 
 type Subscription = SubForForm & {
@@ -416,13 +417,29 @@ export default function DashboardPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete subscription</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete <strong>{deleteTarget?.name}</strong>? This cannot be undone.
+              Are you sure you want to remove <strong>{deleteTarget?.name}</strong> from Hugo? This cannot be undone.
               {deleteError && <span className="block mt-2 text-destructive">{deleteError}</span>}
             </AlertDialogDescription>
           </AlertDialogHeader>
+
+          {deleteTarget && getCancelUrl(deleteTarget.name) && (
+            <a
+              href={getCancelUrl(deleteTarget.name)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700 hover:bg-blue-100 transition-colors"
+            >
+              <ExternalLink className="h-4 w-4 shrink-0" />
+              <span>
+                <span className="font-medium">Cancel on {deleteTarget.name} first?</span>
+                <span className="block text-xs text-blue-500 mt-0.5">Opens the cancellation page — you&apos;ll need to cancel there to stop being charged.</span>
+              </span>
+            </a>
+          )}
+
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDelete}>Delete</AlertDialogAction>
+            <AlertDialogCancel>Keep it</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDelete}>Remove from Hugo</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
