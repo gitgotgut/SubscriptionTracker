@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Users, Crown, UserMinus, Trash2, Send, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useT } from "@/lib/i18n";
 
 type Member = {
   id: string;
@@ -25,6 +26,7 @@ type Props = {
 };
 
 export function HouseholdPanel({ userId, onCreated, onLeft }: Props) {
+  const t = useT();
   const [household, setHousehold] = useState<Household | null>(null);
   const [loading, setLoading] = useState(true);
   const [createName, setCreateName] = useState("");
@@ -66,7 +68,7 @@ export function HouseholdPanel({ userId, onCreated, onLeft }: Props) {
       if (full?.id) setHousehold(full);
     } else {
       const data = await res.json();
-      setError(data.error || "Failed to create household");
+      setError(data.error || t("household.failedToCreate"));
     }
     setCreating(false);
   }
@@ -83,14 +85,14 @@ export function HouseholdPanel({ userId, onCreated, onLeft }: Props) {
         body: JSON.stringify({ email: inviteEmail.trim() }),
       });
       if (res.ok) {
-        setInviteMsg(`Invite sent to ${inviteEmail.trim()}`);
+        setInviteMsg(t("household.inviteSent", { email: inviteEmail.trim() }));
         setInviteEmail("");
       } else {
         const data = await res.json().catch(() => ({}));
-        setError((data as { error?: string }).error || "Failed to send invite");
+        setError((data as { error?: string }).error || t("household.failedToInvite"));
       }
     } catch {
-      setError("Network error — please try again");
+      setError(t("household.networkError"));
     } finally {
       setInviting(false);
     }
@@ -105,13 +107,13 @@ export function HouseholdPanel({ userId, onCreated, onLeft }: Props) {
       setConfirmDelete(false);
       onLeft();
     } else {
-      setError("Failed to leave household");
+      setError(t("household.failedToLeave"));
     }
     setLeaving(false);
   }
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground py-4">Loading…</p>;
+    return <p className="text-sm text-muted-foreground py-4">{t("household.loading")}</p>;
   }
 
   // No household — show create form
@@ -119,20 +121,20 @@ export function HouseholdPanel({ userId, onCreated, onLeft }: Props) {
     return (
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Create a household to share subscriptions with family members. You&apos;ll be able to invite others by email.
+          {t("household.noHouseholdDescription")}
         </p>
         <div className="flex gap-2">
           <input
             type="text"
             value={createName}
             onChange={(e) => setCreateName(e.target.value)}
-            placeholder="Household name (e.g. The Smiths)"
+            placeholder={t("household.householdNamePlaceholder")}
             className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             onKeyDown={(e) => e.key === "Enter" && handleCreate()}
           />
           <Button size="sm" onClick={handleCreate} disabled={creating || !createName.trim()}>
             <Plus className="h-4 w-4 mr-1" />
-            {creating ? "Creating…" : "Create"}
+            {creating ? t("household.creating") : t("household.createButton")}
           </Button>
         </div>
         {error && <p className="text-sm text-destructive">{error}</p>}
@@ -148,7 +150,7 @@ export function HouseholdPanel({ userId, onCreated, onLeft }: Props) {
           <Users className="h-4 w-4" /> {household.name}
         </h3>
         <p className="text-xs text-muted-foreground mt-1">
-          {household.members.length} member{household.members.length !== 1 && "s"}
+          {t(household.members.length !== 1 ? "household.memberCountPlural" : "household.memberCount", { count: String(household.members.length) })}
         </p>
       </div>
 
@@ -159,9 +161,9 @@ export function HouseholdPanel({ userId, onCreated, onLeft }: Props) {
             <span className="flex-1 truncate">{m.user.email}</span>
             <Badge variant={m.role === "owner" ? "default" : "secondary"} className="text-xs">
               {m.role === "owner" ? (
-                <><Crown className="h-3 w-3 mr-1" />Owner</>
+                <><Crown className="h-3 w-3 mr-1" />{t("household.ownerBadge")}</>
               ) : (
-                "Member"
+                t("household.memberBadge")
               )}
             </Badge>
           </div>
@@ -171,19 +173,19 @@ export function HouseholdPanel({ userId, onCreated, onLeft }: Props) {
       {/* Invite form (owner only) */}
       {isOwner && (
         <div className="space-y-2">
-          <p className="text-sm font-medium">Invite a member</p>
+          <p className="text-sm font-medium">{t("household.inviteMember")}</p>
           <div className="flex gap-2">
             <input
               type="email"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="Email address"
+              placeholder={t("household.inviteEmailPlaceholder")}
               className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               onKeyDown={(e) => e.key === "Enter" && handleInvite()}
             />
             <Button size="sm" onClick={handleInvite} disabled={inviting || !inviteEmail.trim()}>
               <Send className="h-4 w-4 mr-1" />
-              {inviting ? "Sending…" : "Invite"}
+              {inviting ? t("household.inviting") : t("household.inviteButton")}
             </Button>
           </div>
           {inviteMsg && <p className="text-sm text-green-600">{inviteMsg}</p>}
@@ -197,25 +199,23 @@ export function HouseholdPanel({ userId, onCreated, onLeft }: Props) {
         {confirmDelete ? (
           <div className="space-y-2">
             <p className="text-sm text-destructive font-medium">
-              {isOwner
-                ? "This will delete the household and remove all members. Shared subscriptions will be unlinked."
-                : "You will no longer see shared subscriptions from this household."}
+              {isOwner ? t("household.confirmDeleteOwner") : t("household.confirmDeleteMember")}
             </p>
             <div className="flex gap-2">
               <Button variant="destructive" size="sm" onClick={handleLeaveOrDelete} disabled={leaving}>
-                {leaving ? "Processing…" : isOwner ? "Delete household" : "Leave household"}
+                {leaving ? t("common.processing") : isOwner ? t("household.confirmDelete") : t("household.confirmLeave")}
               </Button>
               <Button variant="outline" size="sm" onClick={() => setConfirmDelete(false)}>
-                Cancel
+                {t("common.cancel")}
               </Button>
             </div>
           </div>
         ) : (
           <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setConfirmDelete(true)}>
             {isOwner ? (
-              <><Trash2 className="h-4 w-4 mr-1" />Delete household</>
+              <><Trash2 className="h-4 w-4 mr-1" />{t("household.deleteHousehold")}</>
             ) : (
-              <><UserMinus className="h-4 w-4 mr-1" />Leave household</>
+              <><UserMinus className="h-4 w-4 mr-1" />{t("household.leaveHousehold")}</>
             )}
           </Button>
         )}

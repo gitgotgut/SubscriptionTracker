@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 export function SpendChangeBadge() {
+  const t = useT();
   const [change, setChange] = useState<number | null>(null);
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export function SpendChangeBadge() {
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-medium ${color}`}>
       <Icon className="h-3 w-3" />
-      {isUp ? "+" : ""}{change}% from last month
+      {isUp ? "+" : ""}{change}{t("charts.spendFromLastMonth")}
     </span>
   );
 }

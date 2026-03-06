@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { useT } from "@/lib/i18n";
 
 export default function ForgotPasswordPage() {
+  const t = useT();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -28,10 +30,10 @@ export default function ForgotPasswordPage() {
         setSubmitted(true);
       } else {
         const data = await res.json().catch(() => ({}));
-        setError((data as { error?: string }).error || "Something went wrong. Please try again.");
+        setError((data as { error?: string }).error || t("auth.forgotPassword.networkError"));
       }
     } catch {
-      setError("Network error. Please try again.");
+      setError(t("auth.forgotPassword.networkError"));
     } finally {
       setLoading(false);
     }
@@ -52,15 +54,15 @@ export default function ForgotPasswordPage() {
       <div className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-sm">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl">Forgot password</CardTitle>
+            <CardTitle className="text-2xl">{t("auth.forgotPassword.title")}</CardTitle>
             <CardDescription>
-              Enter your email and we&apos;ll send you a reset link.
+              {t("auth.forgotPassword.description")}
             </CardDescription>
           </CardHeader>
           {submitted ? (
             <CardContent>
               <p className="text-sm text-green-600 bg-green-50 rounded-md p-3">
-                If an account exists for <strong>{email}</strong>, you&apos;ll receive a reset link shortly. Check your inbox.
+                {t("auth.forgotPassword.successMessage", { email })}
               </p>
             </CardContent>
           ) : (
@@ -70,11 +72,11 @@ export default function ForgotPasswordPage() {
                   <p className="text-sm text-destructive bg-destructive/10 rounded-md p-3">{error}</p>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t("auth.forgotPassword.emailLabel")}</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={t("auth.forgotPassword.emailPlaceholder")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -84,12 +86,12 @@ export default function ForgotPasswordPage() {
               </CardContent>
               <CardFooter className="flex flex-col gap-3">
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Sending…" : "Send reset link"}
+                  {loading ? t("auth.forgotPassword.submitting") : t("auth.forgotPassword.submitButton")}
                 </Button>
                 <p className="text-sm text-muted-foreground text-center">
-                  Remember your password?{" "}
+                  {t("auth.forgotPassword.rememberPassword")}{" "}
                   <Link href="/login" className="text-primary underline">
-                    Sign in
+                    {t("auth.forgotPassword.signIn")}
                   </Link>
                 </p>
               </CardFooter>

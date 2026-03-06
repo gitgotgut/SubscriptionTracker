@@ -20,6 +20,8 @@ import { HouseholdPanel } from "@/components/household-panel";
 import { SubscriptionLogo } from "@/components/subscription-logo";
 import { getCancelUrl } from "@/lib/cancel-urls";
 import { toMonthlyCents, centsToDisplay, formatAmount } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
+import { LanguageToggle } from "@/components/language-toggle";
 
 type Subscription = SubForForm & {
   amount: string; readonly?: boolean;
@@ -31,25 +33,43 @@ type HistoryEntry = {
   newValue: string | null; changedAt: string; relativeTime: string;
 };
 
-const CATEGORY_VARIANT: Record<string, "streaming"|"fitness"|"food"|"software"|"other"> = {
-  Streaming: "streaming", Fitness: "fitness", Food: "food", Software: "software", Other: "other",
+const CATEGORY_COLORS: Record<string, string> = {
+  Streaming: "#7c3aed", Music: "#db2777", Gaming: "#d97706", "News & Media": "#0284c7",
+  Fitness: "#16a34a", Food: "#ea580c", Software: "#2563eb", "Cloud Storage": "#0891b2",
+  Education: "#4f46e5", "VPN & Security": "#dc2626", Productivity: "#65a30d",
+  Shopping: "#c026d3", Other: "#475569",
+};
+
+const CATEGORY_VARIANT: Record<string, "streaming"|"music"|"gaming"|"news"|"fitness"|"food"|"software"|"cloud"|"education"|"security"|"productivity"|"shopping"|"other"> = {
+  Streaming: "streaming", Music: "music", Gaming: "gaming", "News & Media": "news",
+  Fitness: "fitness", Food: "food", Software: "software", "Cloud Storage": "cloud",
+  Education: "education", "VPN & Security": "security", Productivity: "productivity",
+  Shopping: "shopping", Other: "other",
 };
 
 const CURRENCIES = ["USD","EUR","GBP","SEK","NOK","DKK","CHF","CAD","AUD","JPY"];
 
 function TrialBadge({ trialEndDate }: { trialEndDate: string }) {
+  const t = useT();
   const days = differenceInDays(new Date(trialEndDate), new Date());
   const isExpired = days < 0;
   const isCritical = days >= 0 && days <= 3;
   const isSoon = days >= 0 && days <= 7;
   return (
     <span className={`text-xs font-medium ${isExpired ? "text-red-600" : isCritical ? "text-red-500 animate-pulse" : isSoon ? "text-amber-600" : "text-amber-500"}`}>
-      {isExpired ? `Trial ended ${format(new Date(trialEndDate), "MMM d")}` : days === 0 ? "Trial ends today — converts to paid!" : isCritical ? `Trial ends in ${days}d — converts to paid` : `Trial ends in ${days}d`}
+      {isExpired
+        ? t("dashboard.trialEnded", { date: format(new Date(trialEndDate), "MMM d") })
+        : days === 0
+          ? t("dashboard.trialEndsToday")
+          : isCritical
+            ? t("dashboard.trialEndsCritical", { days: String(days) })
+            : t("dashboard.trialEndsSoon", { days: String(days) })}
     </span>
   );
 }
 
 export default function DashboardPage() {
+  const t = useT();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -63,6 +83,8 @@ export default function DashboardPage() {
   const [displayCurrency, setDisplayCurrency] = useState("USD");
   const [rates, setRates] = useState<Record<string, number>>({ USD: 1 });
   const [ratesFallback, setRatesFallback] = useState(false);
+  // Category filter
+  const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
   // Cancel calculator
   const [calcMode, setCalcMode] = useState(false);
   const [excluded, setExcluded] = useState<Set<string>>(new Set());
@@ -103,13 +125,13 @@ export default function DashboardPage() {
     const gmailStatus = params.get("gmail");
     const outlookStatus = params.get("outlook");
     const joined = params.get("joined");
-    if (gmailStatus === "connected") setGmailNotice("Gmail connected successfully.");
-    else if (gmailStatus === "denied") setGmailNotice("Gmail access was denied.");
-    else if (gmailStatus === "error") setGmailNotice("Gmail connection failed. Please try again.");
-    else if (outlookStatus === "connected") { setOutlookConnected(true); setGmailNotice("Outlook connected successfully."); }
-    else if (outlookStatus === "denied") setGmailNotice("Outlook access was denied.");
-    else if (outlookStatus === "error") setGmailNotice("Outlook connection failed. Please try again.");
-    else if (joined === "1") setGmailNotice("You've joined the household!");
+    if (gmailStatus === "connected") setGmailNotice(t("dashboard.gmailConnectedSuccess"));
+    else if (gmailStatus === "denied") setGmailNotice(t("dashboard.gmailDenied"));
+    else if (gmailStatus === "error") setGmailNotice(t("dashboard.gmailError"));
+    else if (outlookStatus === "connected") { setOutlookConnected(true); setGmailNotice(t("dashboard.outlookConnectedSuccess")); }
+    else if (outlookStatus === "denied") setGmailNotice(t("dashboard.outlookDenied"));
+    else if (outlookStatus === "error") setGmailNotice(t("dashboard.outlookError"));
+    else if (joined === "1") setGmailNotice(t("dashboard.joinedHousehold"));
     if (gmailStatus || outlookStatus || joined) window.history.replaceState({}, "", "/dashboard");
     fetch("/api/exchange-rates").then(r => r.json()).then(d => {
       setRates(d.rates ?? { USD: 1 });
@@ -126,15 +148,28 @@ export default function DashboardPage() {
     return Math.round(cents * (to / from));
   }
 
-  // Only active subs count toward totals (paused excluded); also apply calculator exclusions
-  const activeSubs = subscriptions.filter(s => s.status !== "paused");
+  // Unique categories present in the user's subscriptions (for filter pills)
+  const availableCategories = Array.from(new Set(subscriptions.map(s => s.category))).sort();
+
+  function toggleCategory(cat: string) {
+    setCategoryFilter(prev => {
+      const next = new Set(prev);
+      next.has(cat) ? next.delete(cat) : next.add(cat);
+      return next;
+    });
+    setExcluded(new Set()); // reset calculator when filter changes
+  }
+
+  // Apply category filter first, then status/calculator filters
+  const filteredSubscriptions = categoryFilter.size === 0
+    ? subscriptions
+    : subscriptions.filter(s => categoryFilter.has(s.category));
+
+  const activeSubs = filteredSubscriptions.filter(s => s.status !== "paused");
   const calcActiveSubs = calcMode ? activeSubs.filter(s => !excluded.has(s.id)) : activeSubs;
   const totalMonthlyCents = calcActiveSubs.reduce((sum, s) => sum + convert(toMonthlyCents(s.amountCents, s.billingCycle), s.currency), 0);
   const realMonthlyCents = activeSubs.reduce((sum, s) => sum + convert(toMonthlyCents(s.amountCents, s.billingCycle), s.currency), 0);
   const savingCents = realMonthlyCents - totalMonthlyCents;
-
-  const currencySymbol: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", SEK: "kr", NOK: "kr", DKK: "kr", CHF: "CHF", CAD: "CA$", AUD: "A$", JPY: "¥" };
-  const sym = currencySymbol[displayCurrency] ?? displayCurrency + " ";
 
   async function handleChangeCurrency(val: string) {
     setDisplayCurrency(val);
@@ -192,33 +227,33 @@ export default function DashboardPage() {
             {householdName && <span className="text-xs text-muted-foreground border rounded-full px-2 py-0.5 flex items-center gap-1"><Users className="h-3 w-3" />{householdName}</span>}
           </div>
           <div className="flex items-center gap-2">
-            {ratesFallback && <span className="text-xs text-amber-600">Rates unavailable — showing USD</span>}
+            {ratesFallback && <span className="text-xs text-amber-600">{t("dashboard.ratesUnavailable")}</span>}
             {gmailConnected ? (
               <Button variant="ghost" size="sm" className="text-xs gap-1 text-green-700"
                 onClick={async () => { await fetch("/api/gmail/disconnect", { method: "DELETE" }); setGmailConnected(false); }}>
-                <Mail className="h-3.5 w-3.5" />Gmail
+                <Mail className="h-3.5 w-3.5" />{t("dashboard.gmail")}
               </Button>
             ) : (
               <Button variant="ghost" size="sm" className="text-xs gap-1"
                 onClick={() => { window.location.href = "/api/gmail/connect"; }}>
-                <Mail className="h-3.5 w-3.5" />Connect Gmail
+                <Mail className="h-3.5 w-3.5" />{t("dashboard.connectGmail")}
               </Button>
             )}
             {outlookConnected ? (
               <Button variant="ghost" size="sm" className="text-xs gap-1 text-blue-700"
                 onClick={async () => { await fetch("/api/outlook/disconnect", { method: "DELETE" }); setOutlookConnected(false); }}>
-                <Mail className="h-3.5 w-3.5" />Outlook
+                <Mail className="h-3.5 w-3.5" />{t("dashboard.outlook")}
               </Button>
             ) : (
               <Button variant="ghost" size="sm" className="text-xs gap-1"
                 onClick={() => { window.location.href = "/api/outlook/connect"; }}>
-                <Mail className="h-3.5 w-3.5" />Connect Outlook
+                <Mail className="h-3.5 w-3.5" />{t("dashboard.connectOutlook")}
               </Button>
             )}
             <Button variant="ghost" size="sm" className="text-xs gap-1"
               onClick={() => setHouseholdOpen(true)}>
               <Users className="h-3.5 w-3.5" />
-              {householdName || "Household"}
+              {householdName || t("dashboard.household")}
             </Button>
             <Button variant="ghost" size="sm" className="text-xs gap-1"
               onClick={async () => {
@@ -227,14 +262,15 @@ export default function DashboardPage() {
                 await fetch("/api/me", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ emailReminders: next }) });
               }}>
               {emailReminders ? <Bell className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5 text-muted-foreground" />}
-              {emailReminders ? "Reminders" : "Reminders off"}
+              {emailReminders ? t("dashboard.reminders") : t("dashboard.remindersOff")}
             </Button>
             <Select value={displayCurrency} onValueChange={handleChangeCurrency}>
               <SelectTrigger className="w-24 h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>{CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
             </Select>
+            <LanguageToggle />
             <Button variant="ghost" size="sm" onClick={() => signOut({ callbackUrl: "/login" })}>
-              <LogOut className="h-4 w-4 mr-1" />Sign out
+              <LogOut className="h-4 w-4 mr-1" />{t("common.signOut")}
             </Button>
           </div>
         </div>
@@ -245,76 +281,122 @@ export default function DashboardPage() {
         {/* Summary strip */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Monthly spend</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{t("dashboard.monthlySpend")}</CardTitle></CardHeader>
             <CardContent>
               <p className="text-3xl font-bold">{formatAmount(centsToDisplay(totalMonthlyCents), displayCurrency)}</p>
               <SpendChangeBadge />
-              {calcMode && savingCents > 0 && <p className="text-sm text-green-600 font-medium mt-1">Saving {formatAmount(centsToDisplay(savingCents), displayCurrency)}/mo</p>}
+              {calcMode && savingCents > 0 && <p className="text-sm text-green-600 font-medium mt-1">{t("dashboard.savingPerMonth", { amount: formatAmount(centsToDisplay(savingCents), displayCurrency) })}</p>}
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Annual spend</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{t("dashboard.annualSpend")}</CardTitle></CardHeader>
             <CardContent><p className="text-3xl font-bold">{formatAmount(centsToDisplay(totalMonthlyCents * 12), displayCurrency)}</p></CardContent>
           </Card>
         </div>
+
+        {/* Category filter pills */}
+        {availableCategories.length > 1 && (
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => { setCategoryFilter(new Set()); setExcluded(new Set()); }}
+              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                categoryFilter.size === 0
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-background text-muted-foreground border-border hover:border-foreground hover:text-foreground"
+              }`}
+            >
+              {t("dashboard.all")}
+            </button>
+            {availableCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => toggleCategory(cat)}
+                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                  categoryFilter.has(cat)
+                    ? "text-white border-transparent"
+                    : "bg-background text-muted-foreground border-border hover:border-foreground hover:text-foreground"
+                }`}
+                style={categoryFilter.has(cat) ? { backgroundColor: CATEGORY_COLORS[cat] ?? "#475569", borderColor: CATEGORY_COLORS[cat] ?? "#475569" } : undefined}
+              >
+                {t(`categories.${cat}`) !== `categories.${cat}` ? t(`categories.${cat}`) : cat}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Chart + List */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {subscriptions.length > 0 && (
             <div className="lg:col-span-1 space-y-6">
               <Card>
-                <CardHeader><CardTitle className="text-base">By category</CardTitle></CardHeader>
-                <CardContent><SpendingChart subscriptions={calcActiveSubs} formatValue={(s) => formatAmount(s, displayCurrency)} /></CardContent>
+                <CardContent className="pt-5 pb-4 px-5">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">{t("dashboard.byCategory")}</p>
+                  <SpendingChart
+                    subscriptions={calcActiveSubs.map(s => ({ ...s, amountCents: convert(s.amountCents, s.currency), billingCycle: s.billingCycle }))}
+                    formatValue={(s) => formatAmount(s, displayCurrency)}
+                  />
+                </CardContent>
               </Card>
               <Card>
-                <CardHeader><CardTitle className="text-base">Spending trend</CardTitle></CardHeader>
-                <CardContent><SpendingTrendChart formatValue={(s) => formatAmount(s, displayCurrency)} /></CardContent>
+                <CardContent className="pt-5 pb-4 px-5">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t("dashboard.spendingTrend")}</p>
+                  <SpendingTrendChart
+                    formatValue={(s) => formatAmount(s, displayCurrency)}
+                    categories={categoryFilter.size > 0 ? Array.from(categoryFilter) : undefined}
+                  />
+                </CardContent>
               </Card>
             </div>
           )}
 
           <div className={subscriptions.length > 0 ? "lg:col-span-2" : "lg:col-span-3"}>
             <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-              <h2 className="text-lg font-semibold">Subscriptions</h2>
+              <h2 className="text-lg font-semibold">{t("dashboard.subscriptions")}</h2>
               <div className="flex items-center gap-2">
                 <Button size="sm" variant={calcMode ? "secondary" : "outline"}
                   onClick={() => { setCalcMode(!calcMode); setExcluded(new Set()); }}>
-                  <TrendingDown className="h-4 w-4 mr-1" />{calcMode ? "Exit calculator" : "Cancel calculator"}
+                  <TrendingDown className="h-4 w-4 mr-1" />{calcMode ? t("dashboard.exitCalculator") : t("dashboard.cancelCalculator")}
                 </Button>
                 {gmailConnected && (
                   <Button size="sm" variant="outline" onClick={() => setGmailModalOpen(true)}>
-                    <Mail className="h-4 w-4 mr-1" />Import from Gmail
+                    <Mail className="h-4 w-4 mr-1" />{t("dashboard.importFromGmail")}
                   </Button>
                 )}
                 {outlookConnected && (
                   <Button size="sm" variant="outline" onClick={() => setOutlookModalOpen(true)}>
-                    <Mail className="h-4 w-4 mr-1" />Import from Outlook
+                    <Mail className="h-4 w-4 mr-1" />{t("dashboard.importFromOutlook")}
                   </Button>
                 )}
                 <Button size="sm" onClick={() => { setEditTarget(null); setModalOpen(true); }}>
-                  <Plus className="h-4 w-4 mr-1" />Add
+                  <Plus className="h-4 w-4 mr-1" />{t("dashboard.add")}
                 </Button>
               </div>
             </div>
 
             {calcMode && (
-              <p className="text-xs text-muted-foreground mb-3">Uncheck subscriptions to see your potential savings.</p>
+              <p className="text-xs text-muted-foreground mb-3">{t("dashboard.calcHint")}</p>
             )}
 
             {loading ? (
-              <p className="text-muted-foreground text-sm">Loading…</p>
+              <p className="text-muted-foreground text-sm">{t("dashboard.loading")}</p>
             ) : subscriptions.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <p className="text-muted-foreground mb-4">No subscriptions yet.</p>
+                  <p className="text-muted-foreground mb-4">{t("dashboard.noSubscriptionsYet")}</p>
                   <Button onClick={() => { setEditTarget(null); setModalOpen(true); }}>
-                    <Plus className="h-4 w-4 mr-2" />Add your first subscription
+                    <Plus className="h-4 w-4 mr-2" />{t("dashboard.addFirstSubscription")}
                   </Button>
+                </CardContent>
+              </Card>
+            ) : filteredSubscriptions.length === 0 ? (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <p className="text-muted-foreground text-sm">{t("dashboard.noSubscriptionsMatchFilter")}</p>
                 </CardContent>
               </Card>
             ) : (
               <div className="space-y-3">
-                {subscriptions.map((sub) => {
+                {filteredSubscriptions.map((sub) => {
                   const isExcluded = excluded.has(sub.id);
                   return (
                     <Card key={sub.id} className={`transition-opacity ${sub.status === "paused" ? "opacity-60" : ""} ${calcMode && isExcluded ? "opacity-40" : ""}`}>
@@ -328,31 +410,31 @@ export default function DashboardPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-medium truncate">{sub.name}</span>
-                            <Badge variant={CATEGORY_VARIANT[sub.category] ?? "other"}>{sub.category}</Badge>
-                            {sub.status === "paused" && <Badge variant="secondary">Paused</Badge>}
-                            {sub.status === "trial" && <Badge variant="outline" className="border-amber-400 text-amber-700">Trial</Badge>}
-                            {sub.readonly && <Badge variant="outline" className="border-blue-300 text-blue-700"><Users className="h-3 w-3 mr-1" />Shared</Badge>}
+                            <Badge variant={CATEGORY_VARIANT[sub.category] ?? "other"}>{t(`categories.${sub.category}`) !== `categories.${sub.category}` ? t(`categories.${sub.category}`) : sub.category}</Badge>
+                            {sub.status === "paused" && <Badge variant="secondary">{t("dashboard.paused")}</Badge>}
+                            {sub.status === "trial" && <Badge variant="outline" className="border-amber-400 text-amber-700">{t("dashboard.trial")}</Badge>}
+                            {sub.readonly && <Badge variant="outline" className="border-blue-300 text-blue-700"><Users className="h-3 w-3 mr-1" />{t("dashboard.shared")}</Badge>}
                           </div>
                           {sub.status === "trial" && sub.trialEndDate && (
                             <TrialBadge trialEndDate={sub.trialEndDate} />
                           )}
                           {sub.notes && <p className="text-xs text-muted-foreground mt-0.5 truncate">{sub.notes}</p>}
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            Renews {format(new Date(sub.renewalDate), "MMM d, yyyy")}
+                            {t("dashboard.renewsOn", { date: format(new Date(sub.renewalDate), "MMM d, yyyy") })}
                           </p>
                         </div>
                         <div className="text-right shrink-0">
                           <p className="font-semibold">
                             {formatAmount(centsToDisplay(convert(sub.amountCents, sub.currency)), displayCurrency)}
-                            <span className="text-xs text-muted-foreground ml-1">/{sub.billingCycle === "annual" ? "yr" : "mo"}</span>
+                            <span className="text-xs text-muted-foreground ml-1">/{sub.billingCycle === "annual" ? t("dashboard.perYear") : t("dashboard.perMonth")}</span>
                           </p>
                           {sub.billingCycle === "annual" && (
                             <p className="text-xs text-muted-foreground">
-                              {formatAmount(centsToDisplay(convert(toMonthlyCents(sub.amountCents, sub.billingCycle), sub.currency)), displayCurrency)}/mo
+                              {formatAmount(centsToDisplay(convert(toMonthlyCents(sub.amountCents, sub.billingCycle), sub.currency)), displayCurrency)}{t("charts.perMo")}
                             </p>
                           )}
                           {sub.monthlySavingsHintCents != null && sub.monthlySavingsHintCents > 0 && (
-                            <p className="text-xs text-green-600">Save {formatAmount(centsToDisplay(convert(sub.monthlySavingsHintCents, sub.currency)), displayCurrency)}/mo annually</p>
+                            <p className="text-xs text-green-600">{t("dashboard.savePerMonthAnnually", { amount: formatAmount(centsToDisplay(convert(sub.monthlySavingsHintCents, sub.currency)), displayCurrency) })}</p>
                           )}
                         </div>
                         {!sub.readonly && (
@@ -406,7 +488,7 @@ export default function DashboardPage() {
       {/* Add/Edit modal */}
       <Dialog open={modalOpen} onOpenChange={(o) => { if (!o) { setModalOpen(false); setEditTarget(null); } }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{editTarget ? "Edit subscription" : "Add subscription"}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editTarget ? t("dashboard.editSubscription") : t("dashboard.addSubscription")}</DialogTitle></DialogHeader>
           <SubscriptionForm initial={editTarget ?? undefined} householdId={householdId}
             defaultCurrency={displayCurrency}
             onSubmit={editTarget ? handleEdit : handleAdd}
@@ -418,9 +500,9 @@ export default function DashboardPage() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) { setDeleteTarget(null); setDeleteError(""); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete subscription</AlertDialogTitle>
+            <AlertDialogTitle>{t("dashboard.deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove <strong>{deleteTarget?.name}</strong> from Hugo? This cannot be undone.
+              {t("dashboard.deleteConfirm", { name: deleteTarget?.name ?? "" })}
               {deleteError && <span className="block mt-2 text-destructive">{deleteError}</span>}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -434,15 +516,15 @@ export default function DashboardPage() {
             >
               <ExternalLink className="h-4 w-4 shrink-0" />
               <span>
-                <span className="font-medium">Manage your {deleteTarget.name} subscription</span>
-                <span className="block text-xs text-blue-500 mt-0.5">Sign in to {deleteTarget.name} to cancel and stop being charged.</span>
+                <span className="font-medium">{t("dashboard.manageSubscription", { name: deleteTarget.name })}</span>
+                <span className="block text-xs text-blue-500 mt-0.5">{t("dashboard.cancelHint", { name: deleteTarget.name })}</span>
               </span>
             </a>
           )}
 
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep it</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDelete}>Remove from Hugo</AlertDialogAction>
+            <AlertDialogCancel>{t("dashboard.keepIt")}</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDelete}>{t("dashboard.removeFromHugo")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -450,7 +532,7 @@ export default function DashboardPage() {
       {/* Household panel */}
       <Dialog open={householdOpen} onOpenChange={setHouseholdOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><Users className="h-4 w-4" /> Household</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><Users className="h-4 w-4" /> {t("household.title")}</DialogTitle></DialogHeader>
           {userId && (
             <HouseholdPanel
               userId={userId}
@@ -475,13 +557,13 @@ export default function DashboardPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <History className="h-4 w-4" /> Change history — {historyTarget?.name}
+              <History className="h-4 w-4" /> {t("dashboard.historyTitle", { name: historyTarget?.name ?? "" })}
             </DialogTitle>
           </DialogHeader>
           {historyLoading ? (
-            <p className="text-sm text-muted-foreground py-4">Loading…</p>
+            <p className="text-sm text-muted-foreground py-4">{t("dashboard.historyLoading")}</p>
           ) : historyEntries.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4">No changes recorded yet.</p>
+            <p className="text-sm text-muted-foreground py-4">{t("dashboard.noChanges")}</p>
           ) : (
             <div className="space-y-3 max-h-80 overflow-y-auto">
               {historyEntries.map((h) => (
@@ -496,7 +578,7 @@ export default function DashboardPage() {
             </div>
           )}
           <Button variant="outline" size="sm" className="mt-2" onClick={() => { setHistoryTarget(null); setHistoryEntries([]); }}>
-            <X className="h-4 w-4 mr-1" /> Close
+            <X className="h-4 w-4 mr-1" /> {t("common.close")}
           </Button>
         </DialogContent>
       </Dialog>

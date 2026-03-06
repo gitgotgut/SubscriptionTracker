@@ -2,9 +2,12 @@ import Link from "next/link";
 import { Layers, ArrowRight, ChevronDown } from "lucide-react";
 import { auth } from "@/auth";
 import { FEATURES } from "@/lib/features";
+import { getServerT } from "@/lib/server-i18n";
+import { LanguageToggle } from "@/components/language-toggle";
 
 export async function MarketingHeader() {
   const session = await auth();
+  const t = await getServerT();
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-sm">
@@ -18,7 +21,7 @@ export async function MarketingHeader() {
           {/* Features dropdown */}
           <div className="relative group">
             <button className="flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 py-2">
-              Features <ChevronDown className="h-3.5 w-3.5" />
+              {t("nav.features")} <ChevronDown className="h-3.5 w-3.5" />
             </button>
             <div className="absolute left-0 top-full pt-2 hidden group-hover:block">
               <div className="w-[520px] rounded-xl border border-gray-100 bg-white shadow-lg p-4 grid grid-cols-2 gap-1">
@@ -34,8 +37,8 @@ export async function MarketingHeader() {
                         <Icon className="h-4 w-4 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{f.name}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{f.description}</p>
+                        <p className="text-sm font-medium text-gray-900">{t(f.nameKey)}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{t(f.descriptionKey)}</p>
                       </div>
                     </Link>
                   );
@@ -45,23 +48,24 @@ export async function MarketingHeader() {
           </div>
 
           <Link href="/pricing" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 py-2">
-            Pricing
+            {t("nav.pricing")}
           </Link>
           <Link href="/about" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 py-2">
-            About
+            {t("nav.about")}
           </Link>
           <Link href="/faq" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 py-2">
-            FAQ
+            {t("common.faq")}
           </Link>
         </div>
 
         <nav className="flex items-center gap-3">
+          <LanguageToggle />
           {session ? (
             <Link
               href="/dashboard"
               className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
             >
-              Dashboard <ArrowRight className="h-3.5 w-3.5" />
+              {t("nav.dashboard")} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           ) : (
             <>
@@ -69,13 +73,13 @@ export async function MarketingHeader() {
                 href="/login"
                 className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2"
               >
-                Sign in
+                {t("nav.signIn")}
               </Link>
               <Link
                 href="/register"
                 className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
               >
-                Get started
+                {t("nav.getStarted")}
               </Link>
             </>
           )}

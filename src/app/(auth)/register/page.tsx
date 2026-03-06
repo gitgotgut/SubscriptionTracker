@@ -7,8 +7,10 @@ import { Layers, Check, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useT } from "@/lib/i18n";
 
 export default function RegisterPage() {
+  const t = useT();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,11 +23,11 @@ export default function RegisterPage() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t("auth.register.passwordMismatch"));
       return;
     }
     if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
+      setError(t("auth.register.passwordTooShort"));
       return;
     }
 
@@ -40,7 +42,7 @@ export default function RegisterPage() {
     setLoading(false);
 
     if (!res.ok) {
-      setError(data.error ?? "Registration failed.");
+      setError(data.error ?? t("auth.register.registrationFailed"));
     } else {
       router.push("/login?registered=1");
     }
@@ -58,18 +60,19 @@ export default function RegisterPage() {
 
         <div>
           <h2 className="text-3xl font-bold text-white leading-snug mb-4">
-            Every subscription.<br />One clear view.
+            {t("auth.register.leftPanelHeadline").split("\n").map((line, i) => (
+              <span key={i}>{line}{i === 0 && <br />}</span>
+            ))}
           </h2>
           <p className="text-blue-200 text-sm leading-relaxed mb-8">
-            Stop losing track of what you pay for. Hugo gives you a single,
-            honest overview of every recurring charge — no bank access required.
+            {t("auth.register.leftPanelSubtitle")}
           </p>
           <ul className="space-y-3">
             {[
-              "No credit card needed",
-              "Gmail & Outlook AI import",
-              "Email reminders before renewals",
-              "Household sharing for families",
+              t("auth.register.feature1"),
+              t("auth.register.feature2"),
+              t("auth.register.feature3"),
+              t("auth.register.feature4"),
             ].map((text) => (
               <li key={text} className="flex items-center gap-3 text-white text-sm">
                 <span className="shrink-0 h-5 w-5 rounded-full bg-blue-500 flex items-center justify-center">
@@ -82,7 +85,7 @@ export default function RegisterPage() {
         </div>
 
         <p className="text-blue-300 text-xs">
-          Hugo · Built to keep your subscriptions honest.
+          {t("auth.register.tagline")}
         </p>
       </div>
 
@@ -95,7 +98,7 @@ export default function RegisterPage() {
             <span className="font-semibold tracking-tight text-sm">Hugo</span>
           </Link>
           <Link href="/" className="text-xs text-gray-500 flex items-center gap-1 hover:text-gray-700 transition-colors">
-            <ArrowLeft className="h-3 w-3" /> Back
+            <ArrowLeft className="h-3 w-3" /> {t("common.back")}
           </Link>
         </div>
 
@@ -107,14 +110,14 @@ export default function RegisterPage() {
               href="/"
               className="hidden lg:inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors mb-8"
             >
-              <ArrowLeft className="h-3 w-3" /> Back to Hugo
+              <ArrowLeft className="h-3 w-3" /> {t("common.backToHugo")}
             </Link>
 
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Create your free account</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">{t("auth.register.title")}</h1>
             <p className="text-sm text-gray-500 mb-6">
-              Already have one?{" "}
+              {t("auth.register.alreadyHaveAccount")}{" "}
               <Link href="/login" className="text-blue-600 hover:text-blue-800 font-medium transition-colors">
-                Sign in
+                {t("auth.register.signIn")}
               </Link>
             </p>
 
@@ -126,11 +129,11 @@ export default function RegisterPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="email">Email address</Label>
+                <Label htmlFor="email">{t("auth.register.emailLabel")}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={t("auth.register.emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -139,11 +142,11 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t("auth.register.passwordLabel")}</Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="At least 8 characters"
+                  placeholder={t("auth.register.passwordPlaceholder")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -153,11 +156,11 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="confirmPassword">Confirm password</Label>
+                <Label htmlFor="confirmPassword">{t("auth.register.confirmPasswordLabel")}</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="Repeat your password"
+                  placeholder={t("auth.register.confirmPasswordPlaceholder")}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -166,14 +169,14 @@ export default function RegisterPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Creating account…" : "Create free account"}
+                {loading ? t("auth.register.submitting") : t("auth.register.submitButton")}
               </Button>
             </form>
 
             <p className="mt-6 text-xs text-gray-400 text-center leading-relaxed">
-              No credit card required · We never sell your data ·{" "}
+              {t("auth.register.privacyNote")} ·{" "}
               <Link href="/faq" className="hover:text-gray-600 underline underline-offset-2 transition-colors">
-                FAQ
+                {t("common.faq")}
               </Link>
             </p>
           </div>

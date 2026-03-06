@@ -12,8 +12,11 @@ import {
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing-header";
 import { MarketingFooter } from "@/components/marketing-footer";
+import { getServerT } from "@/lib/server-i18n";
 
-export default function Home() {
+export default async function Home() {
+  const t = await getServerT();
+
   return (
     <div className="min-h-screen bg-white text-gray-900 flex flex-col">
 
@@ -24,30 +27,28 @@ export default function Home() {
         {/* ─── Hero ─── */}
         <section className="max-w-5xl mx-auto px-6 pt-24 pb-20 text-center">
           <p className="inline-block mb-6 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 tracking-wide uppercase">
-            Free to use · No card required
+            {t("landing.badge")}
           </p>
           <h1 className="text-5xl sm:text-6xl font-bold tracking-tight leading-tight mb-6">
-            Every subscription.
+            {t("landing.heroTitle1")}
             <br />
-            <span className="text-blue-600">One clear view.</span>
+            <span className="text-blue-600">{t("landing.heroTitle2")}</span>
           </h1>
           <p className="max-w-xl mx-auto text-lg text-gray-500 mb-10 leading-relaxed">
-            Stop losing track of what you pay for. Hugo gives you a single,
-            honest overview of every recurring charge — streaming, fitness,
-            software, meal plans, and more.
+            {t("landing.heroSubtitle")}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/register"
               className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm"
             >
-              Start tracking for free <ArrowRight className="h-4 w-4" />
+              {t("landing.startTracking")} <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/login"
               className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              Sign in
+              {t("landing.signIn")}
             </Link>
           </div>
         </section>
@@ -61,30 +62,27 @@ export default function Home() {
         <section className="bg-gray-50 border-y border-gray-100 py-20">
           <div className="max-w-5xl mx-auto px-6">
             <h2 className="text-2xl font-bold tracking-tight mb-2 text-center">
-              Everything you need, nothing you don&apos;t
+              {t("landing.featuresTitle")}
             </h2>
             <p className="text-gray-500 text-center mb-12 text-sm">
-              Built for people who want clarity, not complexity.
+              {t("landing.featuresSubtitle")}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
                 {
                   icon: <CreditCard className="h-5 w-5 text-blue-600" />,
-                  title: "Track everything",
-                  description:
-                    "Add any subscription in seconds. Name, cost, billing cycle, renewal date — stored cleanly in one place.",
+                  title: t("landing.feature1Title"),
+                  description: t("landing.feature1Desc"),
                 },
                 {
                   icon: <BarChart3 className="h-5 w-5 text-blue-600" />,
-                  title: "See your real spend",
-                  description:
-                    "Instantly see your total monthly and annual cost, broken down by category so you know exactly where your money goes.",
+                  title: t("landing.feature2Title"),
+                  description: t("landing.feature2Desc"),
                 },
                 {
                   icon: <CalendarCheck className="h-5 w-5 text-blue-600" />,
-                  title: "Stay ahead of renewals",
-                  description:
-                    "Know exactly when each subscription renews before the charge hits your account. No more surprise bills.",
+                  title: t("landing.feature3Title"),
+                  description: t("landing.feature3Desc"),
                 },
               ].map((f) => (
                 <div key={f.title} className="rounded-xl border border-gray-200 bg-white p-6">
@@ -104,14 +102,13 @@ export default function Home() {
           <div className="max-w-5xl mx-auto px-6">
             <div className="text-center mb-10">
               <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 mb-4">
-                <Sparkles className="h-3.5 w-3.5" /> AI-powered import
+                <Sparkles className="h-3.5 w-3.5" /> {t("landing.emailImportBadge")}
               </div>
               <h2 className="text-2xl font-bold tracking-tight mb-3">
-                Import from your inbox automatically
+                {t("landing.emailImportTitle")}
               </h2>
               <p className="text-gray-500 text-sm max-w-xl mx-auto leading-relaxed">
-                Connect Gmail or Outlook and let AI scan your receipts and billing emails.
-                In seconds it detects your recurring subscriptions — you review and approve. No manual entry needed.
+                {t("landing.emailImportSubtitle")}
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -124,18 +121,18 @@ export default function Home() {
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 text-sm">Gmail</p>
-                    <p className="text-xs text-gray-500">Google account</p>
+                    <p className="font-semibold text-gray-900 text-sm">{t("landing.gmailTitle")}</p>
+                    <p className="text-xs text-gray-500">{t("landing.gmailSubtitle")}</p>
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 leading-relaxed mb-6 flex-1">
-                  Connect your Google account. Hugo searches your last 6 months of Gmail for billing-related emails and surfaces your active subscriptions.
+                  {t("landing.gmailDesc")}
                 </p>
                 <Link
                   href="/gmail"
                   className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
                 >
-                  How Gmail import works <ArrowRight className="h-3.5 w-3.5" />
+                  {t("landing.gmailLink")} <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
 
@@ -150,18 +147,18 @@ export default function Home() {
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 text-sm">Outlook</p>
-                    <p className="text-xs text-gray-500">Microsoft account · Hotmail · Live</p>
+                    <p className="font-semibold text-gray-900 text-sm">{t("landing.outlookTitle")}</p>
+                    <p className="text-xs text-gray-500">{t("landing.outlookSubtitle")}</p>
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 leading-relaxed mb-6 flex-1">
-                  Connect your Microsoft account. Hugo searches your Outlook, Hotmail, or Live inbox for receipts and billing emails to detect recurring charges.
+                  {t("landing.outlookDesc")}
                 </p>
                 <Link
                   href="/outlook"
                   className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
                 >
-                  How Outlook import works <ArrowRight className="h-3.5 w-3.5" />
+                  {t("landing.outlookLink")} <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </div>
@@ -169,9 +166,9 @@ export default function Home() {
             {/* Shared privacy note */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-500">
               {[
-                { icon: <Mail className="h-3.5 w-3.5" />, text: "Read-only access — we never send or delete emails" },
-                { icon: <Sparkles className="h-3.5 w-3.5" />, text: "AI parsing — no human ever sees your inbox" },
-                { icon: <ShieldCheck className="h-3.5 w-3.5" />, text: "Email content is never stored" },
+                { icon: <Mail className="h-3.5 w-3.5" />, text: t("landing.privacyReadOnly") },
+                { icon: <Sparkles className="h-3.5 w-3.5" />, text: t("landing.privacyAI") },
+                { icon: <ShieldCheck className="h-3.5 w-3.5" />, text: t("landing.privacyNoStore") },
               ].map((item) => (
                 <span key={item.text} className="flex items-center gap-1.5">
                   {item.icon} {item.text}
@@ -185,27 +182,27 @@ export default function Home() {
         <section className="py-20">
           <div className="max-w-3xl mx-auto px-6 text-center">
             <h2 className="text-2xl font-bold tracking-tight mb-2">
-              Up and running in minutes
+              {t("landing.howItWorksTitle")}
             </h2>
             <p className="text-gray-500 text-sm mb-14">
-              Three steps. No integrations. No bank access required.
+              {t("landing.howItWorksSubtitle")}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               {[
                 {
                   step: "01",
-                  title: "Create your account",
-                  description: "Sign up with just your email. Free, no credit card.",
+                  title: t("landing.step1Title"),
+                  description: t("landing.step1Desc"),
                 },
                 {
                   step: "02",
-                  title: "Add your subscriptions",
-                  description: "Enter each service manually — name, amount, renewal date.",
+                  title: t("landing.step2Title"),
+                  description: t("landing.step2Desc"),
                 },
                 {
                   step: "03",
-                  title: "See the full picture",
-                  description: "Your dashboard shows totals, categories, and upcoming renewals.",
+                  title: t("landing.step3Title"),
+                  description: t("landing.step3Desc"),
                 },
               ].map((s) => (
                 <div key={s.step} className="flex flex-col items-center text-center">
@@ -224,21 +221,21 @@ export default function Home() {
         <section className="bg-blue-600 py-16">
           <div className="max-w-xl mx-auto px-6 text-center">
             <h2 className="text-2xl font-bold text-white mb-3">
-              Ready to take control?
+              {t("landing.ctaTitle")}
             </h2>
             <p className="text-blue-200 text-sm mb-8">
-              It takes less than two minutes to get started.
+              {t("landing.ctaSubtitle")}
             </p>
             <Link
               href="/register"
               className="inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-colors shadow-sm"
             >
-              Create free account <ArrowRight className="h-4 w-4" />
+              {t("landing.ctaButton")} <ArrowRight className="h-4 w-4" />
             </Link>
             <ul className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-blue-200">
-              {["No credit card", "Delete anytime"].map((t) => (
-                <li key={t} className="flex items-center gap-1.5">
-                  <Check className="h-3.5 w-3.5" /> {t}
+              {[t("landing.noCreditCard"), t("landing.deleteAnytime")].map((label) => (
+                <li key={label} className="flex items-center gap-1.5">
+                  <Check className="h-3.5 w-3.5" /> {label}
                 </li>
               ))}
             </ul>

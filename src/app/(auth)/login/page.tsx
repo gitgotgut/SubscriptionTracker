@@ -8,8 +8,10 @@ import { Layers, Check, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useT } from "@/lib/i18n";
 
 function LoginForm() {
+  const t = useT();
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next");
@@ -39,7 +41,7 @@ function LoginForm() {
     setLoading(false);
 
     if (result?.error) {
-      setError("Invalid email or password.");
+      setError(t("auth.login.invalidCredentials"));
     } else {
       router.push(next ?? "/dashboard");
       router.refresh();
@@ -54,18 +56,18 @@ function LoginForm() {
         href="/"
         className="hidden lg:inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors mb-8"
       >
-        <ArrowLeft className="h-3 w-3" /> Back to Hugo
+        <ArrowLeft className="h-3 w-3" /> {t("common.backToHugo")}
       </Link>
 
       <h1 className="text-2xl font-bold text-gray-900 mb-1">
-        {hint ? "Sign in to continue" : "Welcome back"}
+        {hint ? t("auth.login.titleWithHint") : t("auth.login.title")}
       </h1>
       <p className="text-sm text-gray-500 mb-6">
         {hint
-          ? `Please sign in with ${hint} to accept the invitation.`
-          : <>No account yet?{" "}
+          ? t("auth.login.subtitleWithHint", { email: hint })
+          : <>{t("auth.login.noAccount")}{" "}
               <Link href="/register" className="text-blue-600 hover:text-blue-800 font-medium transition-colors">
-                Sign up free
+                {t("auth.login.signUpFree")}
               </Link>
             </>
         }
@@ -73,7 +75,7 @@ function LoginForm() {
 
       {showRegistered && (
         <div className="mb-4 text-sm text-green-700 bg-green-50 border border-green-100 rounded-lg px-4 py-3">
-          Account created — sign in to get started.
+          {t("auth.login.accountCreated")}
         </div>
       )}
 
@@ -85,11 +87,11 @@ function LoginForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="email">Email address</Label>
+          <Label htmlFor="email">{t("auth.login.emailLabel")}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="you@example.com"
+            placeholder={t("auth.login.emailPlaceholder")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -99,12 +101,12 @@ function LoginForm() {
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t("auth.login.passwordLabel")}</Label>
             <Link
               href="/forgot-password"
               className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
             >
-              Forgot password?
+              {t("auth.login.forgotPassword")}
             </Link>
           </div>
           <Input
@@ -118,21 +120,28 @@ function LoginForm() {
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Signing in…" : "Sign in"}
+          {loading ? t("auth.login.submitting") : t("auth.login.submitButton")}
         </Button>
       </form>
 
       <p className="mt-6 text-xs text-gray-400 text-center leading-relaxed">
-        Your data is private and never sold ·{" "}
+        {t("auth.login.privacyNote")} ·{" "}
         <Link href="/faq" className="hover:text-gray-600 underline underline-offset-2 transition-colors">
-          FAQ
+          {t("common.faq")}
         </Link>
       </p>
     </div>
   );
 }
 
-export default function LoginPage() {
+function LoginPageInner() {
+  const t = useT();
+  const features = [
+    t("auth.login.feature1"),
+    t("auth.login.feature2"),
+    t("auth.login.feature3"),
+    t("auth.login.feature4"),
+  ];
   return (
     <div className="min-h-screen flex">
 
@@ -145,19 +154,15 @@ export default function LoginPage() {
 
         <div>
           <h2 className="text-3xl font-bold text-white leading-snug mb-4">
-            Every subscription.<br />One clear view.
+            {t("auth.login.leftPanelHeadline").split("\n").map((line, i) => (
+              <span key={i}>{line}{i === 0 && <br />}</span>
+            ))}
           </h2>
           <p className="text-blue-200 text-sm leading-relaxed mb-8">
-            Stop losing track of what you pay for. Hugo gives you a single,
-            honest overview of every recurring charge — no bank access required.
+            {t("auth.login.leftPanelSubtitle")}
           </p>
           <ul className="space-y-3">
-            {[
-              "No credit card needed",
-              "Gmail & Outlook AI import",
-              "Email reminders before renewals",
-              "Household sharing for families",
-            ].map((text) => (
+            {features.map((text) => (
               <li key={text} className="flex items-center gap-3 text-white text-sm">
                 <span className="shrink-0 h-5 w-5 rounded-full bg-blue-500 flex items-center justify-center">
                   <Check className="h-3 w-3 text-white" />
@@ -169,7 +174,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-blue-300 text-xs">
-          Hugo · Built to keep your subscriptions honest.
+          {t("auth.login.tagline")}
         </p>
       </div>
 
@@ -182,7 +187,7 @@ export default function LoginPage() {
             <span className="font-semibold tracking-tight text-sm">Hugo</span>
           </Link>
           <Link href="/" className="text-xs text-gray-500 flex items-center gap-1 hover:text-gray-700 transition-colors">
-            <ArrowLeft className="h-3 w-3" /> Back
+            <ArrowLeft className="h-3 w-3" /> {t("common.back")}
           </Link>
         </div>
 
@@ -194,5 +199,13 @@ export default function LoginPage() {
       </div>
 
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
   );
 }

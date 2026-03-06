@@ -4,11 +4,15 @@ import { prisma } from "@/lib/prisma";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
 import { toMonthlyCents } from "@/lib/utils";
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const { searchParams } = new URL(req.url);
+  const categoriesParam = searchParams.get("categories");
+  const categoryFilter = categoriesParam ? categoriesParam.split(",") : null;
 
   const now = new Date();
   const months: { label: string; start: Date; end: Date }[] = [];
@@ -23,7 +27,10 @@ export async function GET() {
 
   // All user subscriptions (including cancelled — for history)
   const subscriptions = await prisma.subscription.findMany({
-    where: { userId: session.user.id },
+    where: {
+      userId: session.user.id,
+      ...(categoryFilter ? { category: { in: categoryFilter } } : {}),
+    },
     select: { id: true, amountCents: true, billingCycle: true, status: true, createdAt: true },
   });
 

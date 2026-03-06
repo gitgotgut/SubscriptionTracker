@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckSquare, Square, AlertCircle, ArrowRight } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 type Candidate = {
   serviceName: string;
@@ -29,6 +30,7 @@ type Props = {
 type Step = "idle" | "scanning" | "review" | "importing" | "done" | "error";
 
 export function OutlookImportModal({ open, onClose, onImported }: Props) {
+  const t = useT();
   const [step, setStep] = useState<Step>("idle");
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -117,10 +119,10 @@ export function OutlookImportModal({ open, onClose, onImported }: Props) {
   const updateCount = candidates.filter((c, i) => selected.has(i) && c.isExisting && c.priceChanged).length;
   const actionLabel =
     newCount > 0 && updateCount > 0
-      ? `Import ${newCount} new, update ${updateCount} price${updateCount > 1 ? "s" : ""}`
+      ? t(updateCount > 1 ? "importModal.gmail.importAndUpdatePluralPrices" : "importModal.gmail.importAndUpdate", { newCount: String(newCount), updateCount: String(updateCount) })
       : updateCount > 0
-        ? `Update ${updateCount} price${updateCount > 1 ? "s" : ""}`
-        : `Import ${newCount} subscription${newCount !== 1 ? "s" : ""}`;
+        ? t(updateCount > 1 ? "importModal.gmail.updatePricesPlural" : "importModal.gmail.updatePrices", { count: String(updateCount) })
+        : t(newCount !== 1 ? "importModal.gmail.importNewPlural" : "importModal.gmail.importNew", { count: String(newCount) });
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
@@ -131,18 +133,17 @@ export function OutlookImportModal({ open, onClose, onImported }: Props) {
               <path d="M21 8L12 13L3 8V6L12 11L21 6V8Z" fill="#0078D4"/>
               <path d="M3 8V18C3 19.1 3.9 20 5 20H19C20.1 20 21 19.1 21 18V8L12 13L3 8Z" fill="#0078D4" opacity="0.6"/>
             </svg>
-            Import from Outlook
+            {t("importModal.outlook.title")}
           </DialogTitle>
         </DialogHeader>
 
         {step === "idle" && (
           <div className="space-y-3 py-2">
             <p className="text-sm text-muted-foreground">
-              Hugo will scan your last 6 months of Outlook receipts and use AI to detect
-              recurring subscriptions. Only you can see your emails — nothing is stored.
+              {t("importModal.outlook.idleDescription")}
             </p>
             <Button onClick={runScan} className="w-full">
-              Scan my inbox
+              {t("importModal.outlook.scanButton")}
             </Button>
           </div>
         )}
@@ -150,7 +151,7 @@ export function OutlookImportModal({ open, onClose, onImported }: Props) {
         {step === "scanning" && (
           <div className="flex flex-col items-center gap-3 py-8">
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            <p className="text-sm text-muted-foreground">Scanning your inbox with AI…</p>
+            <p className="text-sm text-muted-foreground">{t("importModal.outlook.scanning")}</p>
           </div>
         )}
 
@@ -161,7 +162,7 @@ export function OutlookImportModal({ open, onClose, onImported }: Props) {
               {errorMsg}
             </div>
             <Button variant="outline" onClick={() => setStep("idle")} className="w-full">
-              Try again
+              {t("importModal.gmail.tryAgain")}
             </Button>
           </div>
         )}
@@ -169,13 +170,12 @@ export function OutlookImportModal({ open, onClose, onImported }: Props) {
         {step === "review" && (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Scanned {scanned} emails — found {candidates.length} subscription
-              {candidates.length !== 1 ? "s" : ""}. Uncheck any you don&apos;t want.
+              {t(candidates.length !== 1 ? "importModal.gmail.reviewDescriptionPlural" : "importModal.gmail.reviewDescription", { scanned: String(scanned), count: String(candidates.length) })}
             </p>
 
             {candidates.length === 0 ? (
               <p className="text-sm text-center py-4 text-muted-foreground">
-                No subscription receipts detected.
+                {t("importModal.gmail.noReceiptsFound")}
               </p>
             ) : (
               <ul className="divide-y max-h-72 overflow-y-auto">
@@ -194,10 +194,10 @@ export function OutlookImportModal({ open, onClose, onImported }: Props) {
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium truncate">{c.serviceName}</p>
                         {c.isExisting && !c.priceChanged && (
-                          <Badge variant="outline" className="text-[10px] shrink-0">Already tracked</Badge>
+                          <Badge variant="outline" className="text-[10px] shrink-0">{t("importModal.gmail.alreadyTracked")}</Badge>
                         )}
                         {c.isExisting && c.priceChanged && (
-                          <Badge variant="secondary" className="text-[10px] shrink-0 bg-amber-50 text-amber-700 border-amber-200">Price change</Badge>
+                          <Badge variant="secondary" className="text-[10px] shrink-0 bg-amber-50 text-amber-700 border-amber-200">{t("importModal.gmail.priceChange")}</Badge>
                         )}
                       </div>
                       {c.isExisting && c.priceChanged && c.existingAmountCents != null ? (
@@ -214,7 +214,7 @@ export function OutlookImportModal({ open, onClose, onImported }: Props) {
                         </p>
                       ) : (
                         <p className="text-xs text-muted-foreground">
-                          Renews {c.renewalDate}
+                          {t("importModal.gmail.renewsOn", { date: c.renewalDate })}
                         </p>
                       )}
                     </div>
@@ -235,7 +235,7 @@ export function OutlookImportModal({ open, onClose, onImported }: Props) {
 
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={handleClose}>
-                Cancel
+                {t("importModal.gmail.cancel")}
               </Button>
               <Button onClick={importSelected} disabled={newCount + updateCount === 0}>
                 {actionLabel}
@@ -247,21 +247,21 @@ export function OutlookImportModal({ open, onClose, onImported }: Props) {
         {step === "importing" && (
           <div className="flex flex-col items-center gap-3 py-8">
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            <p className="text-sm text-muted-foreground">Importing subscriptions…</p>
+            <p className="text-sm text-muted-foreground">{t("importModal.outlook.importing")}</p>
           </div>
         )}
 
         {step === "done" && (
           <div className="space-y-3 py-2 text-center">
             <p className="text-sm font-medium text-green-600">
-              {newCount > 0 && `${newCount} subscription${newCount !== 1 ? "s" : ""} imported`}
+              {newCount > 0 && t(newCount !== 1 ? "importModal.gmail.doneImportedPlural" : "importModal.gmail.doneImported", { count: String(newCount) })}
               {newCount > 0 && updateCount > 0 && ", "}
-              {updateCount > 0 && `${updateCount} price${updateCount !== 1 ? "s" : ""} updated`}
-              {newCount === 0 && updateCount === 0 && "Done"}
+              {updateCount > 0 && t(updateCount !== 1 ? "importModal.gmail.doneUpdatedPlural" : "importModal.gmail.doneUpdated", { count: String(updateCount) })}
+              {newCount === 0 && updateCount === 0 && t("common.done")}
               .
             </p>
             <Button onClick={handleClose} className="w-full">
-              Done
+              {t("common.done")}
             </Button>
           </div>
         )}

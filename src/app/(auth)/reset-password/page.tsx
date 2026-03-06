@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { useT } from "@/lib/i18n";
 
 function ResetPasswordForm() {
+  const t = useT();
   const params = useSearchParams();
   const token = params.get("token") ?? "";
   const router = useRouter();
@@ -24,7 +26,7 @@ function ResetPasswordForm() {
     e.preventDefault();
     setError("");
     if (password !== confirm) {
-      setError("Passwords don't match.");
+      setError(t("auth.resetPassword.passwordMismatch"));
       return;
     }
     setLoading(true);
@@ -39,10 +41,10 @@ function ResetPasswordForm() {
         setTimeout(() => router.push("/login"), 2500);
       } else {
         const data = await res.json().catch(() => ({}));
-        setError((data as { error?: string }).error || "Something went wrong. Please try again.");
+        setError((data as { error?: string }).error || t("auth.resetPassword.networkError"));
       }
     } catch {
-      setError("Network error. Please try again.");
+      setError(t("auth.resetPassword.networkError"));
     } finally {
       setLoading(false);
     }
@@ -52,11 +54,11 @@ function ResetPasswordForm() {
     return (
       <CardContent>
         <p className="text-sm text-destructive bg-destructive/10 rounded-md p-3">
-          Invalid reset link. Please request a new one.
+          {t("auth.resetPassword.invalidLink")}
         </p>
         <div className="mt-4 text-center">
           <Link href="/forgot-password" className="text-sm text-primary underline">
-            Request new link
+            {t("auth.resetPassword.requestNewLink")}
           </Link>
         </div>
       </CardContent>
@@ -67,7 +69,7 @@ function ResetPasswordForm() {
     return (
       <CardContent>
         <p className="text-sm text-green-600 bg-green-50 rounded-md p-3">
-          Password updated! Redirecting you to sign in…
+          {t("auth.resetPassword.successMessage")}
         </p>
       </CardContent>
     );
@@ -80,11 +82,11 @@ function ResetPasswordForm() {
           <p className="text-sm text-destructive bg-destructive/10 rounded-md p-3">{error}</p>
         )}
         <div className="space-y-2">
-          <Label htmlFor="password">New password</Label>
+          <Label htmlFor="password">{t("auth.resetPassword.newPasswordLabel")}</Label>
           <Input
             id="password"
             type="password"
-            placeholder="At least 8 characters"
+            placeholder={t("auth.resetPassword.newPasswordPlaceholder")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -93,11 +95,11 @@ function ResetPasswordForm() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirm">Confirm password</Label>
+          <Label htmlFor="confirm">{t("auth.resetPassword.confirmPasswordLabel")}</Label>
           <Input
             id="confirm"
             type="password"
-            placeholder="Repeat your new password"
+            placeholder={t("auth.resetPassword.confirmPasswordPlaceholder")}
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             required
@@ -107,7 +109,7 @@ function ResetPasswordForm() {
       </CardContent>
       <CardFooter>
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Saving…" : "Set new password"}
+          {loading ? t("auth.resetPassword.submitting") : t("auth.resetPassword.submitButton")}
         </Button>
       </CardFooter>
     </form>
@@ -115,6 +117,7 @@ function ResetPasswordForm() {
 }
 
 export default function ResetPasswordPage() {
+  const t = useT();
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="p-4">
@@ -130,8 +133,8 @@ export default function ResetPasswordPage() {
       <div className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-sm">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl">Set new password</CardTitle>
-            <CardDescription>Choose a strong password for your account.</CardDescription>
+            <CardTitle className="text-2xl">{t("auth.resetPassword.title")}</CardTitle>
+            <CardDescription>{t("auth.resetPassword.description")}</CardDescription>
           </CardHeader>
           <Suspense fallback={<CardContent><p className="text-sm text-muted-foreground">Loading…</p></CardContent>}>
             <ResetPasswordForm />
