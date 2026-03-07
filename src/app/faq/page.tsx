@@ -7,7 +7,7 @@ import { getServerT } from "@/lib/server-i18n";
 
 export const metadata = {
   title: "FAQ — Hugo",
-  description: "Frequently asked questions about Hugo — the free subscription tracker.",
+  description: "Frequently asked questions about Hugo — the free subscription and insurance tracker.",
 };
 
 export default async function FAQPage() {
@@ -26,6 +26,8 @@ export default async function FAQPage() {
     { q: t("faq.q10"), a: t("faq.a10") },
     { q: t("faq.q11"), a: t("faq.a11") },
     { q: t("faq.q12"), a: t("faq.a12") },
+    { q: t("faq.q13"), a: t("faq.a13") },
+    { q: t("faq.q14"), a: t("faq.a14") },
   ];
 
   return (

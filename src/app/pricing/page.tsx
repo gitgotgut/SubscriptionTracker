@@ -27,6 +27,10 @@ export default async function PricingPage() {
     t("pricing.feature12"),
     t("pricing.feature13"),
     t("pricing.feature14"),
+    t("pricing.feature15"),
+    t("pricing.feature16"),
+    t("pricing.feature17"),
+    t("pricing.feature18"),
   ];
 
   return (

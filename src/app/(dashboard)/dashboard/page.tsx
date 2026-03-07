@@ -20,8 +20,11 @@ import { HouseholdPanel } from "@/components/household-panel";
 import { SubscriptionLogo } from "@/components/subscription-logo";
 import { getCancelUrl } from "@/lib/cancel-urls";
 import { toMonthlyCents, centsToDisplay, formatAmount } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/language-toggle";
+import { ModuleSwitcher } from "@/components/module-switcher";
 
 type Subscription = SubForForm & {
   amount: string; readonly?: boolean;
@@ -181,7 +184,8 @@ export default function DashboardPage() {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...data, renewalDate: data.renewalDate ? new Date(data.renewalDate).toISOString() : undefined, trialEndDate: data.trialEndDate ? new Date(data.trialEndDate).toISOString() : null }),
     });
-    if (!res.ok) throw new Error("Failed");
+    if (!res.ok) { toast.error(t("toast.error")); throw new Error("Failed"); }
+    toast.success(t("toast.subscriptionAdded"));
     const created = await res.json();
     setSubscriptions(prev => [created, ...prev]);
     setModalOpen(false);
@@ -193,7 +197,8 @@ export default function DashboardPage() {
       method: "PATCH", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...data, renewalDate: data.renewalDate ? new Date(data.renewalDate).toISOString() : undefined, trialEndDate: data.trialEndDate ? new Date(data.trialEndDate).toISOString() : null }),
     });
-    if (!res.ok) throw new Error("Failed");
+    if (!res.ok) { toast.error(t("toast.error")); throw new Error("Failed"); }
+    toast.success(t("toast.subscriptionUpdated"));
     const updated = await res.json();
     setSubscriptions(prev => prev.map(s => s.id === updated.id ? updated : s));
     setEditTarget(null); setModalOpen(false);
@@ -203,7 +208,8 @@ export default function DashboardPage() {
     if (!deleteTarget) return;
     setDeleteError("");
     const res = await fetch(`/api/subscriptions/${deleteTarget.id}`, { method: "DELETE" });
-    if (!res.ok) { setDeleteError("Failed to delete."); return; }
+    if (!res.ok) { toast.error(t("toast.error")); setDeleteError("Failed to delete."); return; }
+    toast.success(t("toast.subscriptionDeleted"));
     setSubscriptions(prev => prev.filter(s => s.id !== deleteTarget.id));
     setDeleteTarget(null);
   }
@@ -275,6 +281,8 @@ export default function DashboardPage() {
           </div>
         </div>
       </header>
+
+      <ModuleSwitcher />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-8">
 
@@ -378,7 +386,20 @@ export default function DashboardPage() {
             )}
 
             {loading ? (
-              <p className="text-muted-foreground text-sm">{t("dashboard.loading")}</p>
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i}>
+                    <CardContent className="py-4 px-5 flex items-center gap-4">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-40" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                      <Skeleton className="h-5 w-20" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             ) : subscriptions.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">

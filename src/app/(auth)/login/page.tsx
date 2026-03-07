@@ -43,7 +43,7 @@ function LoginForm() {
     if (result?.error) {
       setError(t("auth.login.invalidCredentials"));
     } else {
-      router.push(next ?? "/dashboard");
+      router.push(next ?? "/hub");
       router.refresh();
     }
   }

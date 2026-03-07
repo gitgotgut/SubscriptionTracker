@@ -28,6 +28,7 @@ model User {
   history         SubscriptionHistory[]
   household       Household?     @relation("HouseholdOwner")
   memberOf        HouseholdMember?
+  insurancePolicies InsurancePolicy[]
 }
 
 model Subscription {
@@ -76,6 +77,7 @@ model Household {
   createdAt   DateTime          @default(now())
   members     HouseholdMember[]
   subscriptions Subscription[]
+  insurancePolicies InsurancePolicy[]
 }
 
 model HouseholdMember {
@@ -88,4 +90,41 @@ model HouseholdMember {
   joinedAt    DateTime  @default(now())
 
   @@unique([householdId, userId])
+}
+
+model InsurancePolicy {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  householdId     String?
+  household       Household? @relation(fields: [householdId], references: [id], onDelete: SetNull)
+  provider        String
+  type            String   @default("other")
+  premiumCents    Int
+  currency        String   @default("USD")
+  billingCycle    String
+  renewalDate     DateTime
+  policyNumber    String?
+  status          String   @default("active")
+  coverageNotes   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  documents       InsuranceDocument[]
+
+  @@index([userId])
+  @@index([householdId])
+}
+
+model InsuranceDocument {
+  id           String   @id @default(cuid())
+  policyId     String
+  policy       InsurancePolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  fileName     String
+  fileUrl      String
+  fileType     String
+  uploadedAt   DateTime @default(now())
+  parsedStatus String   @default("pending")
+  analysisResult Json?
+
+  @@index([policyId])
 }
