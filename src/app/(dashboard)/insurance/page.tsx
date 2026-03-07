@@ -53,6 +53,7 @@ export default function InsurancePage() {
   const [editDocs, setEditDocs] = useState<Document[]>([]);
   const [docCounts, setDocCounts] = useState<Record<string, number>>({});
   const [hasAnalyzedDocs, setHasAnalyzedDocs] = useState(false);
+  const [aiRefreshKey, setAiRefreshKey] = useState(0);
 
   const fetchPolicies = useCallback(async () => {
     const res = await fetch("/api/insurance");
@@ -69,6 +70,10 @@ export default function InsurancePage() {
     });
     fetch("/api/exchange-rates").then(r => r.json()).then(d => {
       if (d.rates) setExchangeRates(d.rates);
+    }).catch(() => {});
+    // Check if any analyzed docs exist for AI insights
+    fetch("/api/insurance/has-analyzed-docs").then(r => r.json()).then(d => {
+      if (d.hasAnalyzed) setHasAnalyzedDocs(true);
     }).catch(() => {});
   }, [fetchPolicies]);
 
@@ -253,6 +258,9 @@ export default function InsurancePage() {
           </div>
         )}
 
+        {/* AI Coverage Insights — full width */}
+        <InsuranceAIInsights hasAnalyzedDocs={hasAnalyzedDocs} refreshKey={aiRefreshKey} />
+
         {/* Main content: chart + insights on left, policy list on right */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column: chart + insights */}
@@ -265,7 +273,6 @@ export default function InsurancePage() {
                 </CardContent>
               </Card>
               <InsuranceInsights policies={policies} />
-              <InsuranceAIInsights hasAnalyzedDocs={hasAnalyzedDocs} />
             </div>
           )}
 
@@ -353,7 +360,7 @@ export default function InsurancePage() {
 
       {/* Edit dialog with documents */}
       <Dialog open={!!editingPolicy} onOpenChange={(open) => { if (!open) setEditingPolicy(null); }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>{t("insurance.editPolicy")}</DialogTitle></DialogHeader>
           {editingPolicy && (
             <div className="space-y-6">
@@ -363,7 +370,6 @@ export default function InsurancePage() {
                   policyId={editingPolicy.id}
                   documents={editDocs}
                   onUpdate={() => {
-                    // Refresh doc count
                     fetch(`/api/insurance/${editingPolicy.id}/documents`)
                       .then(r => r.json())
                       .then(docs => {
@@ -371,6 +377,10 @@ export default function InsurancePage() {
                         setDocCounts((prev) => ({ ...prev, [editingPolicy.id]: docs.length }));
                       })
                       .catch(() => {});
+                  }}
+                  onAnalysisComplete={() => {
+                    setHasAnalyzedDocs(true);
+                    setAiRefreshKey((k) => k + 1);
                   }}
                 />
               </div>

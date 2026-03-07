@@ -8,14 +8,14 @@ import { useT } from "@/lib/i18n";
 import { format } from "date-fns";
 
 type AnalysisResult = {
-  coverageType?: string;
-  coveredItems?: string[];
-  deductible?: string | null;
-  coverageLimits?: string | null;
-  exclusions?: string[];
+  coverageType?: unknown;
+  coveredItems?: unknown;
+  deductible?: unknown;
+  coverageLimits?: unknown;
+  exclusions?: unknown;
   effectiveDates?: { start: string; end: string } | null;
-  keyTerms?: string[];
-  summary?: string;
+  keyTerms?: unknown;
+  summary?: unknown;
 };
 
 type Document = {
@@ -31,10 +31,11 @@ type Document = {
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
 
-export function InsuranceDocuments({ policyId, documents: initial, onUpdate }: {
+export function InsuranceDocuments({ policyId, documents: initial, onUpdate, onAnalysisComplete }: {
   policyId: string;
   documents: Document[];
   onUpdate: () => void;
+  onAnalysisComplete?: () => void;
 }) {
   const t = useT();
   const [documents, setDocuments] = useState<Document[]>(initial);
@@ -44,7 +45,6 @@ export function InsuranceDocuments({ policyId, documents: initial, onUpdate }: {
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Sync internal state when parent passes new documents (e.g. switching policy)
   useEffect(() => {
     setDocuments(initial);
   }, [initial]);
@@ -65,14 +65,12 @@ export function InsuranceDocuments({ policyId, documents: initial, onUpdate }: {
 
     setUploading(true);
     try {
-      // Upload file
       const formData = new FormData();
       formData.append("file", file);
       const uploadRes = await fetch("/api/insurance/upload", { method: "POST", body: formData });
       if (!uploadRes.ok) throw new Error();
       const { fileUrl, fileName, fileType } = await uploadRes.json();
 
-      // Create document record
       const docRes = await fetch(`/api/insurance/${policyId}/documents`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -94,7 +92,6 @@ export function InsuranceDocuments({ policyId, documents: initial, onUpdate }: {
     setAnalyzingId(docId);
     setError("");
 
-    // Optimistically update status
     setDocuments((prev) =>
       prev.map((d) => (d.id === docId ? { ...d, parsedStatus: "processing" } : d))
     );
@@ -121,6 +118,7 @@ export function InsuranceDocuments({ policyId, documents: initial, onUpdate }: {
       );
       setExpandedId(docId);
       onUpdate();
+      onAnalysisComplete?.();
     } catch {
       setError(t("insuranceAI.analysisFailed"));
       setDocuments((prev) =>
@@ -225,7 +223,6 @@ export function InsuranceDocuments({ policyId, documents: initial, onUpdate }: {
                 </div>
               </div>
 
-              {/* Analysis result panel */}
               {expandedId === doc.id && doc.analysisResult && (
                 <AnalysisPanel analysis={doc.analysisResult} t={t} />
               )}
@@ -237,53 +234,97 @@ export function InsuranceDocuments({ policyId, documents: initial, onUpdate }: {
   );
 }
 
+function toStr(val: unknown): string {
+  if (typeof val === "string") return val;
+  if (typeof val === "number" || typeof val === "boolean") return String(val);
+  if (val && typeof val === "object") return JSON.stringify(val);
+  return "";
+}
+
+function toStrArray(val: unknown): string[] {
+  if (!Array.isArray(val)) return [];
+  return val.map(toStr).filter(Boolean);
+}
+
 function AnalysisPanel({ analysis, t }: { analysis: AnalysisResult; t: (key: string) => string }) {
+  const summary = toStr(analysis.summary);
+  const coveredItems = toStrArray(analysis.coveredItems);
+  const exclusions = toStrArray(analysis.exclusions);
+  const keyTerms = toStrArray(analysis.keyTerms);
+  const deductible = toStr(analysis.deductible);
+  const coverageLimits = toStr(analysis.coverageLimits);
+
   return (
-    <div className="border-t bg-muted/30 px-3 py-3 space-y-2 text-xs">
-      {analysis.summary && (
-        <div>
-          <p className="font-medium text-foreground mb-0.5">{t("insuranceAI.summary")}</p>
-          <p className="text-muted-foreground">{analysis.summary}</p>
+    <div className="border-t bg-muted/30 px-4 py-4 space-y-4">
+      {/* Summary */}
+      {summary && (
+        <div className="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3">
+          <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-1">{t("insuranceAI.summary")}</p>
+          <p className="text-sm text-blue-900 leading-relaxed">{summary}</p>
         </div>
       )}
-      {analysis.coveredItems && analysis.coveredItems.length > 0 && (
+
+      {/* Details grid */}
+      <div className="grid grid-cols-2 gap-3">
+        {deductible && (
+          <div className="rounded-lg border px-3 py-2.5">
+            <p className="text-xs font-medium text-muted-foreground mb-1">{t("insuranceAI.deductible")}</p>
+            <p className="text-sm font-medium">{deductible}</p>
+          </div>
+        )}
+        {coverageLimits && (
+          <div className="rounded-lg border px-3 py-2.5">
+            <p className="text-xs font-medium text-muted-foreground mb-1">{t("insuranceAI.coverageLimits")}</p>
+            <p className="text-sm font-medium">{coverageLimits}</p>
+          </div>
+        )}
+        {analysis.effectiveDates && (
+          <div className="rounded-lg border px-3 py-2.5">
+            <p className="text-xs font-medium text-muted-foreground mb-1">{t("insuranceAI.effectiveDates")}</p>
+            <p className="text-sm font-medium">{analysis.effectiveDates.start} — {analysis.effectiveDates.end}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Covered items */}
+      {coveredItems.length > 0 && (
         <div>
-          <p className="font-medium text-foreground mb-0.5">{t("insuranceAI.coveredItems")}</p>
-          <p className="text-muted-foreground">{analysis.coveredItems.join(", ")}</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("insuranceAI.coveredItems")}</p>
+          <ul className="space-y-1">
+            {coveredItems.map((item, i) => (
+              <li key={i} className="text-sm text-foreground flex items-start gap-2">
+                <span className="text-green-500 mt-1 shrink-0">•</span>
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
-      {analysis.deductible && (
+
+      {/* Exclusions */}
+      {exclusions.length > 0 && (
         <div>
-          <p className="font-medium text-foreground mb-0.5">{t("insuranceAI.deductible")}</p>
-          <p className="text-muted-foreground">{analysis.deductible}</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("insuranceAI.exclusions")}</p>
+          <ul className="space-y-1">
+            {exclusions.map((item, i) => (
+              <li key={i} className="text-sm text-foreground flex items-start gap-2">
+                <span className="text-red-400 mt-1 shrink-0">•</span>
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
-      {analysis.coverageLimits && (
+
+      {/* Key terms */}
+      {keyTerms.length > 0 && (
         <div>
-          <p className="font-medium text-foreground mb-0.5">{t("insuranceAI.coverageLimits")}</p>
-          <p className="text-muted-foreground">{analysis.coverageLimits}</p>
-        </div>
-      )}
-      {analysis.exclusions && analysis.exclusions.length > 0 && (
-        <div>
-          <p className="font-medium text-foreground mb-0.5">{t("insuranceAI.exclusions")}</p>
-          <p className="text-muted-foreground">{analysis.exclusions.join(", ")}</p>
-        </div>
-      )}
-      {analysis.keyTerms && analysis.keyTerms.length > 0 && (
-        <div>
-          <p className="font-medium text-foreground mb-0.5">{t("insuranceAI.keyTerms")}</p>
-          <div className="flex flex-wrap gap-1 mt-0.5">
-            {analysis.keyTerms.map((term) => (
-              <Badge key={term} variant="secondary" className="text-[10px]">{term}</Badge>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("insuranceAI.keyTerms")}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {keyTerms.map((term, i) => (
+              <Badge key={i} variant="secondary" className="text-xs px-2.5 py-0.5">{term}</Badge>
             ))}
           </div>
-        </div>
-      )}
-      {analysis.effectiveDates && (
-        <div>
-          <p className="font-medium text-foreground mb-0.5">{t("insuranceAI.effectiveDates")}</p>
-          <p className="text-muted-foreground">{analysis.effectiveDates.start} — {analysis.effectiveDates.end}</p>
         </div>
       )}
     </div>

@@ -407,7 +407,9 @@
     "coveredItems": "Dækkede elementer",
     "coverageLimits": "Dækningsgrænser",
     "keyTerms": "Nøglebetingelser",
-    "effectiveDates": "Gyldighedsdatoer"
+    "effectiveDates": "Gyldighedsdatoer",
+    "refreshInsights": "Opdater",
+    "autoAnalyzing": "Sammenligner dine policer med AI…"
   },
   "categories": {
     "Streaming": "Streaming",

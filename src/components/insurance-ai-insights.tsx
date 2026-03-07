@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Sparkles, AlertTriangle, Shield, Lightbulb, Loader2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Sparkles, AlertTriangle, Shield, Lightbulb, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useT } from "@/lib/i18n";
 
 type Insight = {
@@ -14,22 +15,27 @@ type Insight = {
   relatedPolicies: string[];
 };
 
-const INSIGHT_STYLES: Record<string, { icon: typeof AlertTriangle; color: string }> = {
-  overlap: { icon: AlertTriangle, color: "text-amber-600" },
-  gap: { icon: Shield, color: "text-blue-600" },
-  suggestion: { icon: Lightbulb, color: "text-green-600" },
+const INSIGHT_STYLES: Record<string, { icon: typeof AlertTriangle; color: string; border: string; bg: string }> = {
+  overlap: { icon: AlertTriangle, color: "text-amber-600", border: "border-l-amber-500", bg: "bg-amber-50" },
+  gap: { icon: Shield, color: "text-blue-600", border: "border-l-blue-500", bg: "bg-blue-50" },
+  suggestion: { icon: Lightbulb, color: "text-green-600", border: "border-l-green-500", bg: "bg-green-50" },
 };
 
-export function InsuranceAIInsights({ hasAnalyzedDocs }: { hasAnalyzedDocs: boolean }) {
+const SEVERITY_BADGE: Record<string, string> = {
+  high: "bg-red-100 text-red-700",
+  medium: "bg-amber-100 text-amber-700",
+  low: "bg-gray-100 text-gray-600",
+};
+
+export function InsuranceAIInsights({ hasAnalyzedDocs, refreshKey }: { hasAnalyzedDocs: boolean; refreshKey?: number }) {
   const t = useT();
   const [insights, setInsights] = useState<Insight[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleAnalyze() {
+  const fetchInsights = useCallback(async () => {
     setLoading(true);
     setError("");
-    setInsights(null);
 
     try {
       const res = await fetch("/api/insurance/analyze-all", { method: "POST" });
@@ -41,7 +47,7 @@ export function InsuranceAIInsights({ hasAnalyzedDocs }: { hasAnalyzedDocs: bool
 
       const data = await res.json();
       if (data.noData) {
-        setError(t("insuranceAI.noAnalyzedDocs"));
+        setInsights(null);
         return;
       }
       setInsights(data.insights);
@@ -50,7 +56,16 @@ export function InsuranceAIInsights({ hasAnalyzedDocs }: { hasAnalyzedDocs: bool
     } finally {
       setLoading(false);
     }
-  }
+  }, [t]);
+
+  // Auto-fetch on mount if analyzed docs exist, and re-fetch when refreshKey changes
+  useEffect(() => {
+    if (hasAnalyzedDocs) {
+      fetchInsights();
+    }
+  }, [hasAnalyzedDocs, refreshKey, fetchInsights]);
+
+  if (!hasAnalyzedDocs && !insights) return null;
 
   return (
     <Card>
@@ -61,29 +76,33 @@ export function InsuranceAIInsights({ hasAnalyzedDocs }: { hasAnalyzedDocs: bool
             {t("insuranceAI.aiInsightsTitle")}
           </CardTitle>
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="text-xs gap-1.5"
-            disabled={loading || !hasAnalyzedDocs}
-            onClick={handleAnalyze}
+            className="text-xs gap-1.5 h-7"
+            disabled={loading}
+            onClick={fetchInsights}
           >
             {loading ? (
-              <><Loader2 className="h-3.5 w-3.5 animate-spin" />{t("insuranceAI.analyzingCoverage")}</>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
-              <><Sparkles className="h-3.5 w-3.5" />{t("insuranceAI.analyzeCoverage")}</>
+              <RefreshCw className="h-3.5 w-3.5" />
             )}
+            {loading ? t("insuranceAI.analyzingCoverage") : t("insuranceAI.refreshInsights")}
           </Button>
         </div>
       </CardHeader>
       <CardContent>
-        {!hasAnalyzedDocs && !insights && (
-          <p className="text-xs text-muted-foreground">{t("insuranceAI.noAnalyzedDocs")}</p>
+        {loading && !insights && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground py-3">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {t("insuranceAI.autoAnalyzing")}
+          </div>
         )}
 
-        {error && <p className="text-xs text-destructive">{error}</p>}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
-        {insights && insights.length === 0 && (
-          <p className="text-xs text-muted-foreground">{t("insuranceAI.noIssuesFound")}</p>
+        {!loading && insights && insights.length === 0 && (
+          <p className="text-sm text-muted-foreground py-2">{t("insuranceAI.noIssuesFound")}</p>
         )}
 
         {insights && insights.length > 0 && (
@@ -92,16 +111,25 @@ export function InsuranceAIInsights({ hasAnalyzedDocs }: { hasAnalyzedDocs: bool
               const style = INSIGHT_STYLES[insight.type] ?? INSIGHT_STYLES.suggestion;
               const Icon = style.icon;
               return (
-                <div key={i} className="flex gap-2 text-sm">
-                  <Icon className={`h-4 w-4 shrink-0 mt-0.5 ${style.color}`} />
-                  <div>
-                    <p className={`font-medium ${style.color}`}>{insight.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{insight.description}</p>
-                    {insight.relatedPolicies.length > 0 && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {insight.relatedPolicies.join(", ")}
-                      </p>
-                    )}
+                <div key={i} className={`rounded-lg border border-l-4 ${style.border} ${style.bg} px-4 py-3`}>
+                  <div className="flex items-start gap-3">
+                    <Icon className={`h-5 w-5 shrink-0 mt-0.5 ${style.color}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className={`text-sm font-semibold ${style.color}`}>{insight.title}</p>
+                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0 border-0 ${SEVERITY_BADGE[insight.severity] ?? SEVERITY_BADGE.low}`}>
+                          {insight.severity}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-foreground/80 mt-1 leading-relaxed">{insight.description}</p>
+                      {insight.relatedPolicies.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {insight.relatedPolicies.map((name, j) => (
+                            <Badge key={j} variant="secondary" className="text-xs">{name}</Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

@@ -42,10 +42,11 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   }
 
   const { id } = await params;
+  let docId: string | undefined;
 
   try {
     const body = await req.json();
-    const docId = body.docId;
+    docId = body.docId;
     if (!docId) {
       return NextResponse.json({ error: "docId required" }, { status: 400 });
     }
@@ -156,17 +157,16 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       uploadedAt: updated.uploadedAt.toISOString(),
     });
   } catch (e) {
-    // Try to mark as failed
-    try {
-      const body = await req.json().catch(() => ({}));
-      if (body && typeof body === "object" && "docId" in body) {
+    // Mark document as failed if we have the docId
+    if (docId) {
+      try {
         await prisma.insuranceDocument.update({
-          where: { id: (body as { docId: string }).docId },
+          where: { id: docId },
           data: { parsedStatus: "failed" },
         });
+      } catch {
+        // Ignore cleanup errors
       }
-    } catch {
-      // Ignore cleanup errors
     }
 
     const raw = e instanceof Error ? e.message : "Unexpected error";

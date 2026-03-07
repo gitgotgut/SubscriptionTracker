@@ -407,7 +407,9 @@
     "coveredItems": "Covered items",
     "coverageLimits": "Coverage limits",
     "keyTerms": "Key terms",
-    "effectiveDates": "Effective dates"
+    "effectiveDates": "Effective dates",
+    "refreshInsights": "Refresh",
+    "autoAnalyzing": "Comparing your policies with AI…"
   },
   "categories": {
     "Streaming": "Streaming",
