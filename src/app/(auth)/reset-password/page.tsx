@@ -3,7 +3,8 @@
 import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Layers } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { HugoLogo } from "@/components/hugo-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -126,7 +127,7 @@ export default function ResetPasswordPage() {
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          <Layers className="h-4 w-4 text-blue-600" />
+          <HugoLogo size={20} />
           <span className="font-semibold tracking-tight">Hugo</span>
         </Link>
       </header>

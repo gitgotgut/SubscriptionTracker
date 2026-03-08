@@ -60,7 +60,7 @@ export default async function FAQPage() {
             </div>
             <Link
               href="/register"
-              className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm"
+              className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-colors shadow-sm"
             >
               {t("faq.getStartedFree")} <ArrowRight className="h-4 w-4" />
             </Link>

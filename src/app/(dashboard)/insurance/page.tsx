@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { signOut } from "next-auth/react";
-import { Plus, LogOut, Pencil, Trash2, Layers, Shield, FileText } from "lucide-react";
+import { Plus, LogOut, Pencil, Trash2, Shield, FileText } from "lucide-react";
+import { HugoLogo } from "@/components/hugo-logo";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -168,7 +169,7 @@ export default function InsurancePage() {
       <div className="min-h-screen bg-background">
         <header className="border-b bg-card">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-2">
-            <Layers className="h-5 w-5 text-blue-600" />
+            <HugoLogo size={24} />
             <span className="font-semibold tracking-tight">Hugo</span>
           </div>
         </header>
@@ -207,7 +208,7 @@ export default function InsurancePage() {
       <header className="border-b bg-card">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Layers className="h-5 w-5 text-blue-600" />
+            <HugoLogo size={24} />
             <span className="font-semibold tracking-tight">Hugo</span>
           </div>
           <div className="flex items-center gap-2">

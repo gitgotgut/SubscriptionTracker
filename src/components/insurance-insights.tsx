@@ -51,7 +51,7 @@ export function InsuranceInsights({ policies }: { policies: Policy[] }) {
         ))}
         {gaps.map((type) => (
           <div key={type} className="flex gap-2 text-sm">
-            <Shield className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+            <Shield className="h-4 w-4 text-primary/70 shrink-0 mt-0.5" />
             <p className="text-muted-foreground">{t("insuranceInsights.gapSuggestion", { type: t(`insuranceTypes.${type}`) })}</p>
           </div>
         ))}

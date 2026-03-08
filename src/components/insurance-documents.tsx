@@ -193,7 +193,7 @@ export function InsuranceDocuments({ policyId, documents: initial, onUpdate, onA
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 text-blue-600"
+                      className="h-7 w-7 text-primary"
                       disabled={analyzingId !== null}
                       onClick={() => handleAnalyze(doc.id)}
                       title={t("insuranceAI.analyze")}
@@ -258,9 +258,9 @@ function AnalysisPanel({ analysis, t }: { analysis: AnalysisResult; t: (key: str
     <div className="border-t bg-muted/30 px-4 py-4 space-y-4">
       {/* Summary */}
       {summary && (
-        <div className="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3">
-          <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-1">{t("insuranceAI.summary")}</p>
-          <p className="text-sm text-blue-900 leading-relaxed">{summary}</p>
+        <div className="rounded-lg bg-primary/10 border border-primary/20 px-4 py-3">
+          <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-1">{t("insuranceAI.summary")}</p>
+          <p className="text-sm text-foreground leading-relaxed">{summary}</p>
         </div>
       )}
 

@@ -17,7 +17,7 @@ type Insight = {
 
 const INSIGHT_STYLES: Record<string, { icon: typeof AlertTriangle; color: string; border: string; bg: string }> = {
   overlap: { icon: AlertTriangle, color: "text-amber-600", border: "border-l-amber-500", bg: "bg-amber-50" },
-  gap: { icon: Shield, color: "text-blue-600", border: "border-l-blue-500", bg: "bg-blue-50" },
+  gap: { icon: Shield, color: "text-primary", border: "border-l-primary", bg: "bg-primary/10" },
   suggestion: { icon: Lightbulb, color: "text-green-600", border: "border-l-green-500", bg: "bg-green-50" },
 };
 
@@ -72,7 +72,7 @@ export function InsuranceAIInsights({ hasAnalyzedDocs, refreshKey }: { hasAnalyz
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-blue-500" />
+            <Sparkles className="h-4 w-4 text-primary/70" />
             {t("insuranceAI.aiInsightsTitle")}
           </CardTitle>
           <Button

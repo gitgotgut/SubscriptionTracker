@@ -88,9 +88,9 @@ export function DashboardPreview() {
 
   return (
     <div className={`transition-opacity duration-500 ${fading ? "opacity-0" : "opacity-100"}`}>
-      <div className="rounded-2xl border border-gray-100 bg-gray-50 overflow-hidden shadow-sm">
+      <div className="rounded-2xl border border-border bg-muted overflow-hidden shadow-lg shadow-primary/5">
         {/* Browser chrome */}
-        <div className="flex items-center gap-1.5 px-4 py-3 border-b border-gray-200 bg-white">
+        <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border bg-white">
           <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
           <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
           <span className="h-2.5 w-2.5 rounded-full bg-green-400" />

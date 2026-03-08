@@ -150,7 +150,7 @@ export function OutlookImportModal({ open, onClose, onImported }: Props) {
 
         {step === "scanning" && (
           <div className="flex flex-col items-center gap-3 py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">{t("importModal.outlook.scanning")}</p>
           </div>
         )}
@@ -186,7 +186,7 @@ export function OutlookImportModal({ open, onClose, onImported }: Props) {
                     onClick={() => toggle(i)}
                   >
                     {selected.has(i) ? (
-                      <CheckSquare className="h-4 w-4 text-blue-600 shrink-0" />
+                      <CheckSquare className="h-4 w-4 text-primary shrink-0" />
                     ) : (
                       <Square className="h-4 w-4 text-muted-foreground shrink-0" />
                     )}
@@ -246,7 +246,7 @@ export function OutlookImportModal({ open, onClose, onImported }: Props) {
 
         {step === "importing" && (
           <div className="flex flex-col items-center gap-3 py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">{t("importModal.outlook.importing")}</p>
           </div>
         )}

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Layers, Check, ArrowLeft } from "lucide-react";
+import { Check, ArrowLeft } from "lucide-react";
+import { HugoLogo } from "@/components/hugo-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,9 +53,9 @@ export default function RegisterPage() {
     <div className="min-h-screen flex">
 
       {/* ─── Left panel ─── */}
-      <div className="hidden lg:flex lg:w-[45%] bg-blue-600 flex-col justify-between p-12">
+      <div className="hidden lg:flex lg:w-[45%] bg-[#4A6FA5] flex-col justify-between p-12">
         <Link href="/" className="flex items-center gap-2 text-white">
-          <Layers className="h-5 w-5" />
+          <HugoLogo size={28} />
           <span className="font-semibold text-lg tracking-tight">Hugo</span>
         </Link>
 
@@ -64,7 +65,7 @@ export default function RegisterPage() {
               <span key={i}>{line}{i === 0 && <br />}</span>
             ))}
           </h2>
-          <p className="text-blue-200 text-sm leading-relaxed mb-8">
+          <p className="text-white/70 text-sm leading-relaxed mb-8">
             {t("auth.register.leftPanelSubtitle")}
           </p>
           <ul className="space-y-3">
@@ -75,7 +76,7 @@ export default function RegisterPage() {
               t("auth.register.feature4"),
             ].map((text) => (
               <li key={text} className="flex items-center gap-3 text-white text-sm">
-                <span className="shrink-0 h-5 w-5 rounded-full bg-blue-500 flex items-center justify-center">
+                <span className="shrink-0 h-5 w-5 rounded-full bg-white/20 flex items-center justify-center">
                   <Check className="h-3 w-3 text-white" />
                 </span>
                 {text}
@@ -84,7 +85,7 @@ export default function RegisterPage() {
           </ul>
         </div>
 
-        <p className="text-blue-300 text-xs">
+        <p className="text-white/50 text-xs">
           {t("auth.register.tagline")}
         </p>
       </div>
@@ -94,7 +95,7 @@ export default function RegisterPage() {
         {/* Mobile header */}
         <div className="lg:hidden flex items-center justify-between p-5 border-b border-gray-100">
           <Link href="/" className="flex items-center gap-2">
-            <Layers className="h-4 w-4 text-blue-600" />
+            <HugoLogo size={20} />
             <span className="font-semibold tracking-tight text-sm">Hugo</span>
           </Link>
           <Link href="/" className="text-xs text-gray-500 flex items-center gap-1 hover:text-gray-700 transition-colors">
@@ -116,7 +117,7 @@ export default function RegisterPage() {
             <h1 className="text-2xl font-bold text-gray-900 mb-1">{t("auth.register.title")}</h1>
             <p className="text-sm text-gray-500 mb-6">
               {t("auth.register.alreadyHaveAccount")}{" "}
-              <Link href="/login" className="text-blue-600 hover:text-blue-800 font-medium transition-colors">
+              <Link href="/login" className="text-primary hover:text-primary/80 font-medium transition-colors">
                 {t("auth.register.signIn")}
               </Link>
             </p>

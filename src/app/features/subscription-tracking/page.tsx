@@ -15,7 +15,7 @@ export default function SubscriptionTrackingPage() {
       <main className="flex-1">
 
         <section className="max-w-3xl mx-auto px-6 pt-20 pb-14 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-6">
             <CreditCard className="h-3.5 w-3.5" /> Subscription Tracking
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-5">
@@ -31,29 +31,29 @@ export default function SubscriptionTrackingPage() {
           <div className="space-y-4">
             {[
               {
-                icon: <Layers className="h-5 w-5 text-blue-600" />,
+                icon: <Layers className="h-5 w-5 text-primary" />,
                 title: "Add anything in seconds",
                 body: "Enter a name, amount, billing cycle (monthly or annual), renewal date, and category. That's it. Your subscription appears on the dashboard immediately with its monthly and annual equivalent.",
               },
               {
-                icon: <Tags className="h-5 w-5 text-blue-600" />,
+                icon: <Tags className="h-5 w-5 text-primary" />,
                 title: "Organize by category",
                 body: "Streaming, Fitness, Food, Software, or Other — assign a category to each subscription and see your spending grouped visually. The dashboard shows color-coded badges and a category breakdown chart.",
               },
               {
-                icon: <CalendarCheck className="h-5 w-5 text-blue-600" />,
+                icon: <CalendarCheck className="h-5 w-5 text-primary" />,
                 title: "Know when things renew",
                 body: "Every subscription shows its next renewal date. Upcoming renewals are highlighted so you always know what's coming up before it hits your bank account.",
               },
               {
-                icon: <CreditCard className="h-5 w-5 text-blue-600" />,
+                icon: <CreditCard className="h-5 w-5 text-primary" />,
                 title: "Monthly and annual totals",
                 body: "The dashboard summary shows your total monthly spend and the annualized total. Annual subscriptions are automatically converted to a monthly equivalent for easy comparison.",
               },
             ].map((item) => (
               <div key={item.title} className="flex gap-5 rounded-xl border border-gray-100 bg-gray-50 p-6">
                 <div className="shrink-0 mt-0.5">
-                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 border border-blue-100">
+                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
                     {item.icon}
                   </div>
                 </div>
@@ -70,7 +70,7 @@ export default function SubscriptionTrackingPage() {
           <div className="max-w-3xl mx-auto px-6 text-center">
             <h2 className="text-xl font-bold mb-3">Start tracking today</h2>
             <p className="text-sm text-gray-500 mb-6">Free to use, no credit card required.</p>
-            <Link href="/register" className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm">
+            <Link href="/register" className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-colors shadow-sm">
               Get started for free <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

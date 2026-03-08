@@ -15,7 +15,7 @@ export default function PriceDetectionPage() {
       <main className="flex-1">
 
         <section className="max-w-3xl mx-auto px-6 pt-20 pb-14 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-6">
             <TrendingUp className="h-3.5 w-3.5" /> Price Detection
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-5">
@@ -32,7 +32,7 @@ export default function PriceDetectionPage() {
           <div className="space-y-4">
             {[
               {
-                icon: <Search className="h-5 w-5 text-blue-600" />,
+                icon: <Search className="h-5 w-5 text-primary" />,
                 title: "Automatic comparison",
                 body: "When you run a Gmail import scan, Hugo compares every detected subscription against the ones you already track. If the name matches but the price differs, it's flagged as a price change.",
               },
@@ -42,14 +42,14 @@ export default function PriceDetectionPage() {
                 body: "Price changes are highlighted in amber in the import modal — showing the old price, the new price, and the exact difference (e.g. \"$15.99 → $22.99 (+$7.00)\"). No guessing required.",
               },
               {
-                icon: <History className="h-5 w-5 text-blue-600" />,
+                icon: <History className="h-5 w-5 text-primary" />,
                 title: "One-click update with history",
                 body: "Accept the new price with a single click. Hugo updates the subscription and records the change in your price history — so you can see exactly when each increase happened over time.",
               },
             ].map((item) => (
               <div key={item.title} className="flex gap-5 rounded-xl border border-gray-100 bg-gray-50 p-6">
                 <div className="shrink-0 mt-0.5">
-                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 border border-blue-100">
+                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
                     {item.icon}
                   </div>
                 </div>
@@ -81,7 +81,7 @@ export default function PriceDetectionPage() {
           <div className="max-w-3xl mx-auto px-6 text-center">
             <h2 className="text-xl font-bold mb-3">Stay on top of your costs</h2>
             <p className="text-sm text-gray-500 mb-6">Connect Gmail and re-scan any time to check for changes.</p>
-            <Link href="/register" className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm">
+            <Link href="/register" className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-colors shadow-sm">
               Get started for free <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

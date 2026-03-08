@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { signOut } from "next-auth/react";
-import { Plus, LogOut, Pencil, Trash2, History, Layers, TrendingDown, Users, X, Mail, Bell, BellOff, ExternalLink } from "lucide-react";
+import { Plus, LogOut, Pencil, Trash2, History, TrendingDown, Users, X, Mail, Bell, BellOff, ExternalLink } from "lucide-react";
+import { HugoLogo } from "@/components/hugo-logo";
 import { format, differenceInDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -228,7 +229,7 @@ export default function DashboardPage() {
       <header className="border-b bg-card">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Layers className="h-5 w-5 text-blue-600" />
+            <HugoLogo size={24} />
             <span className="font-semibold tracking-tight">Hugo</span>
             {householdName && <span className="text-xs text-muted-foreground border rounded-full px-2 py-0.5 flex items-center gap-1"><Users className="h-3 w-3" />{householdName}</span>}
           </div>
@@ -246,7 +247,7 @@ export default function DashboardPage() {
               </Button>
             )}
             {outlookConnected ? (
-              <Button variant="ghost" size="sm" className="text-xs gap-1 text-blue-700"
+              <Button variant="ghost" size="sm" className="text-xs gap-1 text-primary"
                 onClick={async () => { await fetch("/api/outlook/disconnect", { method: "DELETE" }); setOutlookConnected(false); }}>
                 <Mail className="h-3.5 w-3.5" />{t("dashboard.outlook")}
               </Button>
@@ -434,7 +435,7 @@ export default function DashboardPage() {
                             <Badge variant={CATEGORY_VARIANT[sub.category] ?? "other"}>{t(`categories.${sub.category}`) !== `categories.${sub.category}` ? t(`categories.${sub.category}`) : sub.category}</Badge>
                             {sub.status === "paused" && <Badge variant="secondary">{t("dashboard.paused")}</Badge>}
                             {sub.status === "trial" && <Badge variant="outline" className="border-amber-400 text-amber-700">{t("dashboard.trial")}</Badge>}
-                            {sub.readonly && <Badge variant="outline" className="border-blue-300 text-blue-700"><Users className="h-3 w-3 mr-1" />{t("dashboard.shared")}</Badge>}
+                            {sub.readonly && <Badge variant="outline" className="border-primary/40 text-primary"><Users className="h-3 w-3 mr-1" />{t("dashboard.shared")}</Badge>}
                           </div>
                           {sub.status === "trial" && sub.trialEndDate && (
                             <TrialBadge trialEndDate={sub.trialEndDate} />
@@ -484,7 +485,7 @@ export default function DashboardPage() {
       {/* Gmail notice banner */}
       {gmailNotice && (
         <div className="fixed bottom-4 right-4 bg-card border rounded-lg shadow-lg px-4 py-3 flex items-center gap-3 text-sm z-50">
-          <Mail className="h-4 w-4 text-blue-600 shrink-0" />
+          <Mail className="h-4 w-4 text-primary shrink-0" />
           {gmailNotice}
           <button onClick={() => setGmailNotice(null)} className="ml-2 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
@@ -533,12 +534,12 @@ export default function DashboardPage() {
               href={getCancelUrl(deleteTarget.name)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700 hover:bg-blue-100 transition-colors"
+              className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-primary hover:bg-primary/15 transition-colors"
             >
               <ExternalLink className="h-4 w-4 shrink-0" />
               <span>
                 <span className="font-medium">{t("dashboard.manageSubscription", { name: deleteTarget.name })}</span>
-                <span className="block text-xs text-blue-500 mt-0.5">{t("dashboard.cancelHint", { name: deleteTarget.name })}</span>
+                <span className="block text-xs text-primary/70 mt-0.5">{t("dashboard.cancelHint", { name: deleteTarget.name })}</span>
               </span>
             </a>
           )}
@@ -589,7 +590,7 @@ export default function DashboardPage() {
             <div className="space-y-3 max-h-80 overflow-y-auto">
               {historyEntries.map((h) => (
                 <div key={h.id} className="flex gap-3 text-sm">
-                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-400 shrink-0" />
+                  <div className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" />
                   <div>
                     <p><span className="font-medium">{h.field}</span> changed from <span className="line-through text-muted-foreground">{h.oldValue ?? "—"}</span> to <span className="font-medium">{h.newValue ?? "—"}</span></p>
                     <p className="text-xs text-muted-foreground">{h.relativeTime}</p>

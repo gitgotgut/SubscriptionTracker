@@ -22,11 +22,11 @@ export default async function OutlookPage() {
   const t = await getServerT();
 
   const steps = [
-    { icon: <KeyRound className="h-5 w-5 text-blue-600" />, step: "1", title: t("outlook.step1Title"), body: t("outlook.step1Body") },
-    { icon: <Eye className="h-5 w-5 text-blue-600" />, step: "2", title: t("outlook.step2Title"), body: t("outlook.step2Body") },
-    { icon: <Sparkles className="h-5 w-5 text-blue-600" />, step: "3", title: t("outlook.step3Title"), body: t("outlook.step3Body") },
-    { icon: <Check className="h-5 w-5 text-blue-600" />, step: "4", title: t("outlook.step4Title"), body: t("outlook.step4Body") },
-    { icon: <Ban className="h-5 w-5 text-blue-600" />, step: "5", title: t("outlook.step5Title"), body: t("outlook.step5Body") },
+    { icon: <KeyRound className="h-5 w-5 text-primary" />, step: "1", title: t("outlook.step1Title"), body: t("outlook.step1Body") },
+    { icon: <Eye className="h-5 w-5 text-primary" />, step: "2", title: t("outlook.step2Title"), body: t("outlook.step2Body") },
+    { icon: <Sparkles className="h-5 w-5 text-primary" />, step: "3", title: t("outlook.step3Title"), body: t("outlook.step3Body") },
+    { icon: <Check className="h-5 w-5 text-primary" />, step: "4", title: t("outlook.step4Title"), body: t("outlook.step4Body") },
+    { icon: <Ban className="h-5 w-5 text-primary" />, step: "5", title: t("outlook.step5Title"), body: t("outlook.step5Body") },
   ];
 
   const rows = [
@@ -46,7 +46,7 @@ export default async function OutlookPage() {
 
         {/* ─── Hero ─── */}
         <section className="max-w-3xl mx-auto px-6 pt-20 pb-14 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-6">
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
               <rect x="2" y="3" width="13" height="18" rx="2" fill="#0078D4"/>
               <rect x="9" y="7" width="13" height="10" rx="1.5" fill="#28A8E8"/>
@@ -68,12 +68,12 @@ export default async function OutlookPage() {
             {steps.map((item) => (
               <div key={item.step} className="flex gap-5 rounded-xl border border-gray-100 bg-gray-50 p-6">
                 <div className="shrink-0 mt-0.5">
-                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 border border-blue-100">
+                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
                     {item.icon}
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-1">
+                  <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-1">
                     {t("outlook.step", { n: item.step })}
                   </p>
                   <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
@@ -142,7 +142,7 @@ export default async function OutlookPage() {
             </p>
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-colors shadow-sm"
             >
               {t("outlook.ctaButton")} <ArrowRight className="h-4 w-4" />
             </Link>

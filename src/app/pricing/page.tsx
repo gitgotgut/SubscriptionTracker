@@ -54,11 +54,11 @@ export default async function PricingPage() {
 
         {/* ─── Pricing card ─── */}
         <section className="max-w-lg mx-auto px-6 pb-20">
-          <div className="rounded-2xl border-2 border-blue-200 bg-white shadow-sm overflow-hidden">
-            <div className="bg-blue-600 px-8 py-6 text-white text-center">
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-200 mb-1">{t("pricing.freePlanLabel")}</p>
+          <div className="rounded-2xl border-2 border-primary/30 bg-white shadow-sm overflow-hidden">
+            <div className="bg-primary px-8 py-6 text-white text-center">
+              <p className="text-xs font-semibold uppercase tracking-widest text-white/70 mb-1">{t("pricing.freePlanLabel")}</p>
               <p className="text-5xl font-bold mb-1">{t("pricing.price")}</p>
-              <p className="text-sm text-blue-200">{t("pricing.noCardNeeded")}</p>
+              <p className="text-sm text-white/70">{t("pricing.noCardNeeded")}</p>
             </div>
             <div className="px-8 py-8">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5">
@@ -76,7 +76,7 @@ export default async function PricingPage() {
               </ul>
               <Link
                 href="/register"
-                className="mt-8 flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm"
+                className="mt-8 flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-colors shadow-sm"
               >
                 {t("pricing.getStarted")} <ArrowRight className="h-4 w-4" />
               </Link>
@@ -100,7 +100,7 @@ export default async function PricingPage() {
             <p className="text-sm text-gray-500 mb-3">{t("pricing.stillHaveQuestions")}</p>
             <Link
               href="/faq"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
             >
               {t("pricing.readFaq")} <ArrowRight className="h-3.5 w-3.5" />
             </Link>

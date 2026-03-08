@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Eye, Layers } from "lucide-react";
+import { HugoLogo } from "@/components/hugo-logo";
 import { MarketingHeader } from "@/components/marketing-header";
 import { MarketingFooter } from "@/components/marketing-footer";
 import { getServerT } from "@/lib/server-i18n";
@@ -21,7 +22,7 @@ export default async function AboutPage() {
         {/* ─── Hero ─── */}
         <section className="max-w-2xl mx-auto px-6 pt-20 pb-14">
           <div className="flex items-center gap-2 mb-8">
-            <Layers className="h-5 w-5 text-blue-600" />
+            <HugoLogo size={24} />
             <span className="font-semibold tracking-tight">Hugo</span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-6 leading-tight">
@@ -46,23 +47,23 @@ export default async function AboutPage() {
             <div className="space-y-6">
               {[
                 {
-                  icon: <Eye className="h-5 w-5 text-blue-600" />,
+                  icon: <Eye className="h-5 w-5 text-primary" />,
                   title: t("about.value1Title"),
                   body: t("about.value1Body"),
                 },
                 {
-                  icon: <ShieldCheck className="h-5 w-5 text-blue-600" />,
+                  icon: <ShieldCheck className="h-5 w-5 text-primary" />,
                   title: t("about.value2Title"),
                   body: t("about.value2Body"),
                 },
                 {
-                  icon: <Layers className="h-5 w-5 text-blue-600" />,
+                  icon: <Layers className="h-5 w-5 text-primary" />,
                   title: t("about.value3Title"),
                   body: t("about.value3Body"),
                 },
               ].map((item) => (
                 <div key={item.title} className="flex gap-5">
-                  <div className="shrink-0 mt-0.5 h-9 w-9 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center">
+                  <div className="shrink-0 mt-0.5 h-9 w-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
                     {item.icon}
                   </div>
                   <div>
@@ -85,7 +86,7 @@ export default async function AboutPage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-colors shadow-sm"
               >
                 {t("about.getStarted")} <ArrowRight className="h-4 w-4" />
               </Link>

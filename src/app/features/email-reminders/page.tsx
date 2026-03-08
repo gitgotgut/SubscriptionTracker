@@ -15,7 +15,7 @@ export default function EmailRemindersPage() {
       <main className="flex-1">
 
         <section className="max-w-3xl mx-auto px-6 pt-20 pb-14 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-6">
             <Bell className="h-3.5 w-3.5" /> Email Reminders
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-5">
@@ -32,7 +32,7 @@ export default function EmailRemindersPage() {
           <div className="space-y-4">
             {[
               {
-                icon: <Clock className="h-5 w-5 text-blue-600" />,
+                icon: <Clock className="h-5 w-5 text-primary" />,
                 title: "7-day renewal heads-up",
                 body: "Every morning, Hugo checks your upcoming renewals. If anything renews within 7 days, you get a single consolidated email listing each subscription, its amount, and the renewal date.",
               },
@@ -42,14 +42,14 @@ export default function EmailRemindersPage() {
                 body: "Tracking a free trial? Hugo alerts you 3 days before it converts to a paid subscription — including the price it will convert to. This is the single most effective way to avoid unwanted charges.",
               },
               {
-                icon: <SlidersHorizontal className="h-5 w-5 text-blue-600" />,
+                icon: <SlidersHorizontal className="h-5 w-5 text-primary" />,
                 title: "One-click on or off",
                 body: "Toggle reminders from the dashboard header with a single click. When disabled, no emails are sent. You stay in full control — no spam, no marketing, just the alerts you asked for.",
               },
             ].map((item) => (
               <div key={item.title} className="flex gap-5 rounded-xl border border-gray-100 bg-gray-50 p-6">
                 <div className="shrink-0 mt-0.5">
-                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 border border-blue-100">
+                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
                     {item.icon}
                   </div>
                 </div>
@@ -64,8 +64,8 @@ export default function EmailRemindersPage() {
 
         <section className="py-16">
           <div className="max-w-3xl mx-auto px-6">
-            <div className="rounded-2xl border border-blue-100 bg-blue-50 p-8 flex gap-5 items-start">
-              <Bell className="h-6 w-6 text-blue-600 shrink-0 mt-0.5" />
+            <div className="rounded-2xl border border-primary/20 bg-primary/10 p-8 flex gap-5 items-start">
+              <Bell className="h-6 w-6 text-primary shrink-0 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Proactive, not reactive</h3>
                 <p className="text-sm text-gray-600 leading-relaxed">
@@ -82,7 +82,7 @@ export default function EmailRemindersPage() {
           <div className="max-w-3xl mx-auto px-6 text-center">
             <h2 className="text-xl font-bold mb-3">Stop overpaying</h2>
             <p className="text-sm text-gray-500 mb-6">Reminders are on by default — just sign up and add your subscriptions.</p>
-            <Link href="/register" className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm">
+            <Link href="/register" className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-colors shadow-sm">
               Get started for free <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

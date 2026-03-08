@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { signOut } from "next-auth/react";
-import { Layers, LogOut, CreditCard, Shield, Lightbulb, CalendarClock, ArrowRight } from "lucide-react";
+import { LogOut, CreditCard, Shield, Lightbulb, CalendarClock, ArrowRight } from "lucide-react";
+import { HugoLogo } from "@/components/hugo-logo";
 import { format } from "date-fns";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -92,7 +93,7 @@ export default function HubPage() {
 
   const totalMonthly = data ? data.totalMonthlySubscriptionsCents + data.totalMonthlyInsuranceCents : 0;
 
-  const RECO_ICONS: Record<string, string> = { savings: "text-green-600", warning: "text-amber-600", info: "text-blue-600" };
+  const RECO_ICONS: Record<string, string> = { savings: "text-green-600", warning: "text-amber-600", info: "text-primary" };
 
   return (
     <div className="min-h-screen bg-background">
@@ -100,7 +101,7 @@ export default function HubPage() {
       <header className="border-b bg-card">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Layers className="h-5 w-5 text-blue-600" />
+            <HugoLogo size={24} />
             <span className="font-semibold tracking-tight">Hugo</span>
           </div>
           <div className="flex items-center gap-2">
@@ -284,7 +285,7 @@ export default function HubPage() {
                   <div className="space-y-2">
                     {data?.upcomingRenewals.map((r, i) => (
                       <div key={i} className="flex items-center gap-3 py-2 border-b last:border-0">
-                        <div className={`h-8 w-8 rounded-full flex items-center justify-center ${r.type === "subscription" ? "bg-blue-100 text-blue-600" : "bg-emerald-100 text-emerald-600"}`}>
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center ${r.type === "subscription" ? "bg-primary/15 text-primary" : "bg-emerald-100 text-emerald-600"}`}>
                           {r.type === "subscription" ? <CreditCard className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -302,9 +303,9 @@ export default function HubPage() {
             {/* Quick actions */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Link href="/dashboard">
-                <Card className="hover:border-blue-300 transition-colors cursor-pointer group">
+                <Card className="hover:border-primary/40 transition-colors cursor-pointer group">
                   <CardContent className="py-5 flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-full bg-primary/15 text-primary flex items-center justify-center">
                       <CreditCard className="h-5 w-5" />
                     </div>
                     <div className="flex-1">

@@ -133,7 +133,7 @@ export function GmailImportModal({ open, onClose, onImported }: Props) {
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5 text-blue-600" />
+            <Mail className="h-5 w-5 text-primary" />
             {t("importModal.gmail.title")}
           </DialogTitle>
         </DialogHeader>
@@ -153,7 +153,7 @@ export function GmailImportModal({ open, onClose, onImported }: Props) {
         {/* Scanning */}
         {step === "scanning" && (
           <div className="flex flex-col items-center gap-3 py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">{t("importModal.gmail.scanning")}</p>
           </div>
         )}
@@ -191,7 +191,7 @@ export function GmailImportModal({ open, onClose, onImported }: Props) {
                     onClick={() => toggle(i)}
                   >
                     {selected.has(i) ? (
-                      <CheckSquare className="h-4 w-4 text-blue-600 shrink-0" />
+                      <CheckSquare className="h-4 w-4 text-primary shrink-0" />
                     ) : (
                       <Square className="h-4 w-4 text-muted-foreground shrink-0" />
                     )}
@@ -255,7 +255,7 @@ export function GmailImportModal({ open, onClose, onImported }: Props) {
         {/* Importing */}
         {step === "importing" && (
           <div className="flex flex-col items-center gap-3 py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">{t("importModal.gmail.importing")}</p>
           </div>
         )}

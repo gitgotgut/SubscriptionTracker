@@ -4,7 +4,8 @@ import { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Layers, Check, ArrowLeft } from "lucide-react";
+import { Check, ArrowLeft } from "lucide-react";
+import { HugoLogo } from "@/components/hugo-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,7 +67,7 @@ function LoginForm() {
         {hint
           ? t("auth.login.subtitleWithHint", { email: hint })
           : <>{t("auth.login.noAccount")}{" "}
-              <Link href="/register" className="text-blue-600 hover:text-blue-800 font-medium transition-colors">
+              <Link href="/register" className="text-primary hover:text-primary/80 font-medium transition-colors">
                 {t("auth.login.signUpFree")}
               </Link>
             </>
@@ -146,9 +147,9 @@ function LoginPageInner() {
     <div className="min-h-screen flex">
 
       {/* ─── Left panel ─── */}
-      <div className="hidden lg:flex lg:w-[45%] bg-blue-600 flex-col justify-between p-12">
+      <div className="hidden lg:flex lg:w-[45%] bg-[#4A6FA5] flex-col justify-between p-12">
         <Link href="/" className="flex items-center gap-2 text-white">
-          <Layers className="h-5 w-5" />
+          <HugoLogo size={28} />
           <span className="font-semibold text-lg tracking-tight">Hugo</span>
         </Link>
 
@@ -158,13 +159,13 @@ function LoginPageInner() {
               <span key={i}>{line}{i === 0 && <br />}</span>
             ))}
           </h2>
-          <p className="text-blue-200 text-sm leading-relaxed mb-8">
+          <p className="text-white/70 text-sm leading-relaxed mb-8">
             {t("auth.login.leftPanelSubtitle")}
           </p>
           <ul className="space-y-3">
             {features.map((text) => (
               <li key={text} className="flex items-center gap-3 text-white text-sm">
-                <span className="shrink-0 h-5 w-5 rounded-full bg-blue-500 flex items-center justify-center">
+                <span className="shrink-0 h-5 w-5 rounded-full bg-white/20 flex items-center justify-center">
                   <Check className="h-3 w-3 text-white" />
                 </span>
                 {text}
@@ -173,7 +174,7 @@ function LoginPageInner() {
           </ul>
         </div>
 
-        <p className="text-blue-300 text-xs">
+        <p className="text-white/50 text-xs">
           {t("auth.login.tagline")}
         </p>
       </div>
@@ -183,7 +184,7 @@ function LoginPageInner() {
         {/* Mobile header */}
         <div className="lg:hidden flex items-center justify-between p-5 border-b border-gray-100">
           <Link href="/" className="flex items-center gap-2">
-            <Layers className="h-4 w-4 text-blue-600" />
+            <HugoLogo size={20} />
             <span className="font-semibold tracking-tight text-sm">Hugo</span>
           </Link>
           <Link href="/" className="text-xs text-gray-500 flex items-center gap-1 hover:text-gray-700 transition-colors">
