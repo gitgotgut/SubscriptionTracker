@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Sparkles, AlertTriangle, Shield, Lightbulb, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,32 @@ type Insight = {
   severity: "high" | "medium" | "low";
   relatedPolicies: string[];
 };
+
+const CACHE_KEY = "hugo_ai_insights";
+
+type CachedInsights = {
+  insights: Insight[];
+  cachedAt: number;
+};
+
+function loadCachedInsights(): CachedInsights | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as CachedInsights;
+  } catch {
+    return null;
+  }
+}
+
+function saveCachedInsights(insights: Insight[]) {
+  try {
+    const data: CachedInsights = { insights, cachedAt: Date.now() };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+  } catch {
+    // localStorage full or unavailable
+  }
+}
 
 const INSIGHT_STYLES: Record<string, { icon: typeof AlertTriangle; color: string; border: string; bg: string }> = {
   overlap: { icon: AlertTriangle, color: "text-amber-600", border: "border-l-amber-500", bg: "bg-amber-50" },
@@ -29,9 +55,13 @@ const SEVERITY_BADGE: Record<string, string> = {
 
 export function InsuranceAIInsights({ hasAnalyzedDocs, refreshKey }: { hasAnalyzedDocs: boolean; refreshKey?: number }) {
   const t = useT();
-  const [insights, setInsights] = useState<Insight[] | null>(null);
+  const [insights, setInsights] = useState<Insight[] | null>(() => {
+    if (typeof window === "undefined") return null;
+    return loadCachedInsights()?.insights ?? null;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const prevRefreshKey = useRef(refreshKey);
 
   const fetchInsights = useCallback(async () => {
     setLoading(true);
@@ -48,9 +78,11 @@ export function InsuranceAIInsights({ hasAnalyzedDocs, refreshKey }: { hasAnalyz
       const data = await res.json();
       if (data.noData) {
         setInsights(null);
+        localStorage.removeItem(CACHE_KEY);
         return;
       }
       setInsights(data.insights);
+      saveCachedInsights(data.insights);
     } catch {
       setError(t("insuranceAI.analysisFailed"));
     } finally {
@@ -58,12 +90,21 @@ export function InsuranceAIInsights({ hasAnalyzedDocs, refreshKey }: { hasAnalyz
     }
   }, [t]);
 
-  // Auto-fetch on mount if analyzed docs exist, and re-fetch when refreshKey changes
+  // Re-fetch only when refreshKey increments (new document was analyzed)
   useEffect(() => {
-    if (hasAnalyzedDocs) {
+    if (refreshKey !== undefined && refreshKey !== prevRefreshKey.current) {
+      prevRefreshKey.current = refreshKey;
       fetchInsights();
     }
-  }, [hasAnalyzedDocs, refreshKey, fetchInsights]);
+  }, [refreshKey, fetchInsights]);
+
+  // On mount: only fetch if no cache exists and there are analyzed docs
+  useEffect(() => {
+    if (hasAnalyzedDocs && !loadCachedInsights()) {
+      fetchInsights();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasAnalyzedDocs]);
 
   if (!hasAnalyzedDocs && !insights) return null;
 
