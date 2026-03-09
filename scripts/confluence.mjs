@@ -9,8 +9,8 @@
  *   node scripts/confluence.mjs test           — test the connection
  */
 
-import { readFileSync } from "fs";
-import { resolve, dirname } from "path";
+import { readFileSync, existsSync } from "fs";
+import { resolve, dirname, basename } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -101,6 +101,56 @@ async function upsertPage(title, body, parentId) {
   }
   console.log(`  + Creating "${title}"`);
   return createPage(title, body, parentId);
+}
+
+async function uploadAttachment(pageId, filePath) {
+  const url = `${BASE}/content/${pageId}/child/attachment`;
+  const fileName = basename(filePath);
+  const fileData = readFileSync(filePath);
+  const boundary = "----FormBoundary" + Date.now().toString(36);
+
+  const header = `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${fileName}"\r\nContent-Type: image/png\r\n\r\n`;
+  const footer = `\r\n--${boundary}--\r\n`;
+
+  const body = Buffer.concat([
+    Buffer.from(header, "utf-8"),
+    fileData,
+    Buffer.from(footer, "utf-8"),
+  ]);
+
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      Authorization: AUTH,
+      "Content-Type": `multipart/form-data; boundary=${boundary}`,
+      "X-Atlassian-Token": "nocheck",
+    },
+    body,
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Upload ${fileName} → ${res.status}: ${text.slice(0, 300)}`);
+  }
+  return res.json();
+}
+
+async function uploadImages(pageId, files) {
+  const diagramDir = resolve(__dirname, "..", "public", "diagrams");
+
+  for (const file of files) {
+    const filePath = resolve(diagramDir, file);
+    if (!existsSync(filePath)) {
+      console.log(`    ⚠ Skipping ${file} (not found)`);
+      continue;
+    }
+    try {
+      await uploadAttachment(pageId, filePath);
+      console.log(`    📎 Uploaded ${file}`);
+    } catch (err) {
+      console.error(`    ✗ Failed to upload ${file}: ${err.message}`);
+    }
+  }
 }
 
 // ── Documentation content ──
@@ -297,7 +347,27 @@ function databaseSchema() {
 function brandDesign() {
   return `
 <h2>Brand &amp; Design System</h2>
-<p>Hugo's visual identity was designed with Proposal C — a fintech-appropriate palette combining trust (slate blue) with warmth (terracotta).</p>
+<p>Hugo's visual identity was designed through three brand proposals, with <strong>Proposal C (Slate Blue + Terracotta)</strong> selected as the final direction — a fintech-appropriate palette combining trust (slate blue) with warmth (terracotta).</p>
+
+<h3>Design Process — Brand Proposals</h3>
+<p>Three distinct brand directions were explored, each with full mockups including hero, dashboard preview, color palette, and typography:</p>
+
+<h4>Proposal A — Warm Indigo + Gold</h4>
+<p><ac:image ac:width="900"><ri:attachment ri:filename="brand-proposal-a.png" /></ac:image></p>
+<p>Deep purple primary (#5B45A8) with gold accent (#E8C97B). Premium, confident feel but potentially too corporate for a family-focused product.</p>
+
+<h4>Proposal B — Forest Green + Cream</h4>
+<p><ac:image ac:width="900"><ri:attachment ri:filename="brand-proposal-b.png" /></ac:image></p>
+<p>Nature-inspired green primary (#2D7A4E) with warm cream background (#F7F3EC). Organic and approachable, but lower perceived tech sophistication.</p>
+
+<h4>Proposal C — Slate Blue + Terracotta ★ CHOSEN</h4>
+<p><ac:image ac:width="900"><ri:attachment ri:filename="brand-proposal-c.png" /></ac:image></p>
+<p>Balanced combination of trust (slate blue #4A6FA5) and warmth (terracotta #C8644A). Professional yet approachable — ideal for fintech serving families.</p>
+
+<h3>Logo Explorations</h3>
+<p>Four logo directions were explored before selecting the <strong>Orbital Ring</strong> (option 3):</p>
+<p><ac:image ac:width="900"><ri:attachment ri:filename="brand-logo-explorations.png" /></ac:image></p>
+<p>The Orbital Ring symbolizes recurring/cyclical finances, with the terracotta dot representing active monitoring. Component: <code>src/components/hugo-logo.tsx</code></p>
 
 <h3>Color Palette</h3>
 <table>
@@ -316,9 +386,15 @@ function brandDesign() {
 <tr><td>UI / Body</td><td>Plus Jakarta Sans</td><td><code>font-sans</code></td><td>All body text, UI elements</td></tr>
 </table>
 
-<h3>Logo</h3>
-<p>The "Orbital Ring" logo: a circle stroke in primary (#4A6FA5) with a lowercase "h" in Fraunces inside, and a terracotta dot (#C8644A) at the upper right.</p>
-<p>Component: <code>src/components/hugo-logo.tsx</code></p>
+<h3>Dashboard Design</h3>
+<p>The final dashboard design applying Proposal C's brand identity:</p>
+<p><ac:image ac:width="900"><ri:attachment ri:filename="brand-dashboard-mockup.png" /></ac:image></p>
+<p>Key elements: stat cards with KPIs, upcoming renewals table, AI insights sidebar (terracotta for overlaps, blue for suggestions), and spending-by-category bar chart.</p>
+
+<h3>Landing Page Design</h3>
+<p>The public-facing landing page:</p>
+<p><ac:image ac:width="900"><ri:attachment ri:filename="brand-landing-page.png" /></ac:image></p>
+<p>Sections: hero with dashboard preview, trust logos, 3-step "How It Works", feature grid, social proof stats, and dark footer with the brand story tagline.</p>
 
 <h3>Brand Story</h3>
 <p><em>"Named after what matters most."</em> — Hugo was built by a parent who wanted a clearer view of the family's finances. Named after their child, it's a reminder that financial clarity isn't just about money — it's about the people it protects.</p>
@@ -376,186 +452,50 @@ function integrations() {
 function processFlows() {
   return `
 <h2>Process Flows</h2>
-<p>Step-by-step flows for every major user journey in Hugo.</p>
+<p>Visual step-by-step flows for every major user journey in Hugo. Each diagram uses consistent color coding: <strong style="color:#4A6FA5;">blue</strong> for app/API layers, <strong style="color:#C8644A;">terracotta</strong> for AI processing, <strong style="color:#22C55E;">green</strong> for database/security, and <strong style="color:#F59E0B;">amber</strong> for user actions/output.</p>
 
-<h3>1. User Registration &amp; Authentication</h3>
-<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">text</ac:parameter><ac:plain-text-body><![CDATA[
-┌─────────┐     POST /api/auth/register       ┌───────────┐     bcrypt.hash(pw,12)     ┌────────────┐
-│  User    │ ──────────────────────────────────▸│  Next.js  │ ──────────────────────────▸│ PostgreSQL │
-│  Browser │     {email, password}              │  API      │     prisma.user.create     │  (Neon)    │
-└─────────┘                                    └───────────┘                            └────────────┘
-     │                                              │
-     │         POST /api/auth/[...nextauth]         │
-     │ ────────────────────────────────────────────▸ │
-     │         {email, password}                     │
-     │                                              │
-     │    ◀── JWT session cookie (httpOnly) ────── │
-     │                                              │
-     │         GET /dashboard                       │
-     │ ────────────────────────────────────────────▸ │
-     │         middleware.ts checks auth()           │
-     │    ◀── 200 OK (or redirect to /login) ───── │
-]]></ac:plain-text-body></ac:structured-macro>
+<h3>1. System Architecture</h3>
+<p><ac:image ac:width="900"><ri:attachment ri:filename="01-system-architecture.png" /></ac:image></p>
 
-<h3>2. Gmail Email Import Flow</h3>
-<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">text</ac:parameter><ac:plain-text-body><![CDATA[
-Step 1 — OAuth Connect
-┌─────────┐  GET /api/gmail/connect  ┌───────────┐  redirect  ┌─────────────────┐
-│  User    │ ───────────────────────▸ │  Hugo API │ ─────────▸ │ Google OAuth    │
-│  Browser │                         │  (JWT     │            │ Consent Screen  │
-│          │ ◀─────────────────────── │   state)  │ ◀───────── │ gmail.readonly  │
-│          │  /dashboard?gmail=ok    │           │  callback  │                 │
-└─────────┘                          └───────────┘  +code     └─────────────────┘
-                                          │
-                                          │ exchange code → access_token + refresh_token
-                                          │ store tokens on User row
-                                          ▼
-                                     ┌────────────┐
-                                     │ PostgreSQL │
-                                     └────────────┘
+<h3>2. Auth &amp; Registration Flow</h3>
+<p><ac:image ac:width="900"><ri:attachment ri:filename="02-auth-registration.png" /></ac:image></p>
+<p><strong>Key endpoints:</strong> <code>POST /api/auth/register</code> → bcrypt hash → Prisma create → <code>POST /api/auth/[...nextauth]</code> → JWT httpOnly cookie → <code>middleware.ts auth()</code> guards all <code>/dashboard/*</code> routes.</p>
 
-Step 2 — Scan & Import
-┌─────────┐  POST /api/gmail/import  ┌───────────┐  GET /users/me/messages  ┌───────────┐
-│  Import  │ ───────────────────────▸ │  Hugo API │ ──────────────────────▸  │ Gmail API │
-│  Modal   │                         │           │  q=receipt|invoice|...   │           │
-│          │                         │           │ ◀────── message list ──── │           │
-│          │                         │           │                          └───────────┘
-│          │                         │           │
-│          │                         │           │  POST /v1/messages (all emails as batch)
-│          │                         │           │ ──────────────────────────────────────▸
-│          │                         │           │                         ┌────────────┐
-│          │                         │           │ ◀── JSON subscriptions ─ │ Claude AI  │
-│          │                         │           │                         │ (Haiku)    │
-│          │ ◀── {candidates[]}  ─── │           │                         └────────────┘
-│          │                         └───────────┘
-│          │  User reviews & selects
-│          │  POST /api/subscriptions (per item)
-│          │ ───────────────────────▸ DB
-└─────────┘
-]]></ac:plain-text-body></ac:structured-macro>
+<h3>3. Gmail / Outlook Email Import Flow</h3>
+<p><ac:image ac:width="900"><ri:attachment ri:filename="03-email-import.png" /></ac:image></p>
+<p><strong>Gmail:</strong> OAuth 2.0 via Google → <code>googleapis</code> → fetch messages with <code>q=receipt|invoice</code> → Claude extracts subscription data.</p>
+<p><strong>Outlook:</strong> Same flow via Microsoft Identity Platform → <code>Microsoft Graph API</code> (<code>graph.microsoft.com/v1.0/me/messages</code>) → Graph returns full HTML body inline → stripped before Claude.</p>
 
-<h3>3. Outlook Email Import Flow</h3>
-<p>Identical to Gmail except:</p>
-<ul>
-<li>OAuth via <strong>Microsoft Identity Platform</strong> (<code>login.microsoftonline.com</code>), scope: <code>Mail.Read</code></li>
-<li>Emails fetched from <strong>Microsoft Graph</strong> (<code>graph.microsoft.com/v1.0/me/messages</code>)</li>
-<li>Graph returns full HTML body → server strips tags before sending to Claude</li>
-<li>No per-message fetch needed (Graph returns body inline)</li>
-</ul>
+<h3>4. Insurance Document Analysis</h3>
+<p><ac:image ac:width="900"><ri:attachment ri:filename="04-insurance-analysis.png" /></ac:image></p>
+<p><strong>Upload:</strong> <code>POST /api/insurance/upload</code> (multipart) → stored to disk. <strong>Analysis:</strong> <code>POST /api/insurance/[id]/documents/analyze</code> → file read + base64 → Claude extracts coverage types, limits, deductibles, exclusions → JSON stored in DB.</p>
 
-<h3>4. Insurance Document Analysis Flow</h3>
-<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">text</ac:parameter><ac:plain-text-body><![CDATA[
-Step 1 — Upload
-┌─────────┐  POST /api/insurance/upload   ┌───────────┐  fs.writeFile()  ┌──────────────┐
-│  User    │  (multipart/form-data)       │  Hugo API │ ───────────────▸ │ Server Disk  │
-│  Browser │ ────────────────────────────▸│           │                  │ /uploads/    │
-│          │ ◀── {fileUrl, fileName} ──── │           │                  │ insurance/   │
-│          │                              │           │                  └──────────────┘
-│          │  POST /api/insurance/[id]/documents
-│          │  {fileUrl, fileName, fileType}
-│          │ ────────────────────────────▸│           │──▸ prisma.insuranceDocument.create
-│          │ ◀── document (pending) ───── │           │    parsedStatus: "pending"
-└─────────┘                              └───────────┘
-
-Step 2 — AI Analysis
-┌─────────┐  POST /api/insurance/[id]/documents/analyze  ┌───────────┐
-│  User    │  {docId}                                    │  Hugo API │
-│  clicks  │ ──────────────────────────────────────────▸ │           │
-│  analyze │                                             │  1. Read file from disk
-│          │                                             │  2. Convert to base64
-│          │                                             │  3. Send to Claude:
-│          │                                             │     ┌────────────┐
-│          │                                             │ ──▸ │ Claude AI  │
-│          │                                             │     │ (Haiku)    │
-│          │                                             │     │            │
-│          │                                             │ ◀── │ Extracted: │
-│          │                                             │     │ coverage,  │
-│          │                                             │     │ deductible │
-│          │                                             │     │ exclusions │
-│          │                                             │     │ limits,    │
-│          │                                             │     │ key terms  │
-│          │                                             │     └────────────┘
-│          │                                             │  4. Store analysisResult (JSON) in DB
-│          │ ◀── document (completed + analysis) ─────── │     parsedStatus: "completed"
-└─────────┘                                              └───────────┘
-]]></ac:plain-text-body></ac:structured-macro>
-
-<h3>5. Cross-Policy AI Coverage Insights</h3>
-<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">text</ac:parameter><ac:plain-text-body><![CDATA[
-┌──────────────┐  POST /api/insurance/analyze-all  ┌───────────┐
-│  Insights    │ ────────────────────────────────▸ │  Hugo API │
-│  Component   │                                   │           │
-│  (auto or    │                                   │  1. Fetch all active policies
-│   refresh)   │                                   │     with analyzed documents
-│              │                                   │  2. Build portfolio summary JSON
-│              │                                   │  3. Send to Claude:
-│              │                                   │     ┌────────────┐
-│              │                                   │ ──▸ │ Claude AI  │
-│              │                                   │     │ (Haiku)    │
-│              │                                   │ ◀── │ Returns:   │
-│              │                                   │     │ overlaps,  │
-│              │                                   │     │ gaps,      │
-│              │                                   │     │ suggestions│
-│              │                                   │     └────────────┘
-│              │ ◀── {insights[]} ──────────────── │
-│              │  → cached in localStorage         │
-└──────────────┘                                   └───────────┘
-]]></ac:plain-text-body></ac:structured-macro>
+<h3>5. Cross-Policy AI Insights</h3>
+<p><ac:image ac:width="900"><ri:attachment ri:filename="05-cross-policy-insights.png" /></ac:image></p>
+<p><strong>Trigger:</strong> <code>POST /api/insurance/analyze-all</code> → fetches all active policies with analyzed documents → builds portfolio summary → Claude identifies overlaps, gaps, and savings → results cached in <code>localStorage</code> with 24h TTL.</p>
 
 <h3>6. Household Sharing Flow</h3>
-<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">text</ac:parameter><ac:plain-text-body><![CDATA[
-Owner creates household:
-POST /api/household {name}
-→ Creates Household + HouseholdMember(role:"owner")
-→ Sets User.householdId
+<p><ac:image ac:width="900"><ri:attachment ri:filename="06-household-sharing.png" /></ac:image></p>
+<p><strong>Setup:</strong> <code>POST /api/household</code> creates group → <code>POST /api/household/invite</code> sends JWT invite email (7-day expiry) → <code>GET /api/household/accept?token=</code> joins member. <strong>Shared access:</strong> all queries include <code>WHERE userId = me OR householdId = myHouseholdId</code>. Other members' items shown as read-only.</p>
 
-Owner invites member:
-POST /api/household/invite {email}
-→ Signs JWT (7-day expiry) with {householdId, invitedEmail}
-→ Sends invite email via Resend
-
-Invited user accepts:
-GET /api/household/accept?token=<jwt>
-→ Verifies JWT
-→ Checks session email matches invitedEmail
-→ Creates HouseholdMember(role:"member")
-→ Sets User.householdId
-→ Redirects to /dashboard?joined=1
-
-Shared access:
-All GET /api/subscriptions and GET /api/insurance queries include:
-  WHERE userId = me OR householdId = myHouseholdId
-Other members' items shown as readonly: true (no edit/delete buttons)
-]]></ac:plain-text-body></ac:structured-macro>
-
+<hr/>
 <h3>7. Renewal Alert Cron Flow</h3>
 <ac:structured-macro ac:name="code"><ac:parameter ac:name="language">text</ac:parameter><ac:plain-text-body><![CDATA[
-┌──────────┐  GET /api/cron/renewal-alerts  ┌───────────┐  query renewals  ┌────────────┐
-│  Cron    │  Authorization: Bearer SECRET  │  Hugo API │  within 7 days   │ PostgreSQL │
-│  (daily) │ ─────────────────────────────▸ │           │ ───────────────▸ │            │
-│          │                                │           │ ◀─── results ─── │            │
-│          │                                │           │                  └────────────┘
-│          │                                │           │  group by user
-│          │                                │           │  build HTML digest
-│          │                                │           │ ────────────────────▸ ┌────────┐
-│          │                                │           │  send via Resend     │ Resend │
-│          │ ◀── {sent: count} ──────────── │           │ ◀─── 200 OK ──────── │        │
-└──────────┘                                └───────────┘                      └────────┘
+GET /api/cron/renewal-alerts (Authorization: Bearer SECRET)
+→ Query subscriptions renewing within 7 days
+→ Group by user → Build HTML digest → Send via Resend
+→ Returns {sent: count}
 ]]></ac:plain-text-body></ac:structured-macro>
 
 <h3>8. Password Reset Flow</h3>
 <ac:structured-macro ac:name="code"><ac:parameter ac:name="language">text</ac:parameter><ac:plain-text-body><![CDATA[
 POST /api/auth/forgot-password {email}
-→ Generate 32-byte random token
-→ SHA-256 hash → store hash + 15-min expiry in DB
-→ Send email via Resend with link: /reset-password?token=<rawToken>
-→ Always returns {ok:true} (no email leak)
+→ Generate 32-byte token → SHA-256 hash → store in DB (15-min expiry)
+→ Send reset link via Resend → Always returns {ok:true} (no email leak)
 
 POST /api/auth/reset-password {token, password}
-→ SHA-256 hash the token
-→ Lookup by hash where expiry > now
-→ bcrypt.hash(newPassword, 12)
-→ Update user, clear reset token fields
+→ SHA-256 hash token → Lookup by hash where expiry > now
+→ bcrypt.hash(newPassword, 12) → Update user, clear reset fields
 ]]></ac:plain-text-body></ac:structured-macro>
 `;
 }
@@ -566,46 +506,8 @@ function dataProcessingPipeline() {
 <p>This document describes how data moves through Hugo's technology stack, with a focus on the AI (Anthropic Claude) integrations.</p>
 
 <h3>System Architecture Overview</h3>
-<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">text</ac:parameter><ac:plain-text-body><![CDATA[
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                              USER BROWSER                                   │
-│   React 18 + Tailwind CSS + Radix UI                                       │
-│   Client-side: i18n, form validation (Zod), localStorage caching           │
-└────────────────────────────────┬─────────────────────────────────────────────┘
-                                 │ HTTPS (JSON / multipart)
-                                 ▼
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                         NEXT.JS 14 APP ROUTER                               │
-│                                                                              │
-│  ┌─────────────┐  ┌──────────────┐  ┌───────────────┐  ┌───────────────┐   │
-│  │ middleware.ts│  │ API Routes   │  │ Server        │  │ Zod           │   │
-│  │ Auth guard   │  │ /api/*       │  │ Components    │  │ Validation    │   │
-│  └──────┬──────┘  └──────┬───────┘  └───────────────┘  └───────────────┘   │
-│         │                │                                                   │
-│         ▼                ▼                                                   │
-│  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │                    NextAuth.js v5 (JWT Strategy)                      │   │
-│  │              Credentials provider · bcrypt · httpOnly cookie          │   │
-│  └──────────────────────────────────────────────────────────────────────┘   │
-└────────────────────────────────┬─────────────────────────────────────────────┘
-                                 │
-          ┌──────────────────────┼──────────────────────┐
-          │                      │                      │
-          ▼                      ▼                      ▼
-┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────┐
-│ PostgreSQL       │  │ Anthropic Claude │  │ External Services    │
-│ (Neon)           │  │ API              │  │                      │
-│                  │  │                  │  │ • Google Gmail API   │
-│ • Users          │  │ Model:           │  │ • Microsoft Graph    │
-│ • Subscriptions  │  │ claude-haiku-    │  │ • Resend (email)     │
-│ • History        │  │ 4-5-20251001     │  │ • Frankfurter.app    │
-│ • Policies       │  │                  │  │   (exchange rates)   │
-│ • Documents      │  │ Uses:            │  │ • Confluence API     │
-│ • Households     │  │ 1. Email parsing │  │   (documentation)    │
-│                  │  │ 2. Doc analysis  │  │                      │
-│ Prisma ORM      │  │ 3. Coverage AI   │  │                      │
-└──────────────────┘  └──────────────────┘  └──────────────────────┘
-]]></ac:plain-text-body></ac:structured-macro>
+<p><ac:image ac:width="900"><ri:attachment ri:filename="01-system-architecture.png" /></ac:image></p>
+<p>Three-tier architecture: React browser client → Next.js 14 App Router (middleware, API routes, Zod validation, NextAuth.js v5) → PostgreSQL (Prisma ORM), Anthropic Claude API, and external services (Gmail, Outlook, Resend).</p>
 
 <h3>Claude AI — Three Integration Points</h3>
 
@@ -620,25 +522,16 @@ function dataProcessingPipeline() {
 <tr><td>Persisted?</td><td>No — results shown in modal, user selects which to save as Subscription rows</td></tr>
 </table>
 
-<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">text</ac:parameter><ac:plain-text-body><![CDATA[
-Input pipeline:
-  Gmail API / Microsoft Graph
-    → raw email (MIME/HTML)
-    → decode base64 / strip HTML tags
-    → truncate to 1500 chars
-    → bundle all into one prompt string
+<p><ac:image ac:width="900"><ri:attachment ri:filename="03-email-import.png" /></ac:image></p>
 
-Claude prompt extracts:
-  - serviceName, amount, currency
-  - billingCycle (monthly/annual)
-  - renewalDate, category
-
-Post-processing:
-  - Normalize names (lowercase, strip non-alpha)
-  - Compare against existing subscriptions
-  - Annotate: isExisting, priceChanged, existingId
-  - Return candidates to UI for user review
-]]></ac:plain-text-body></ac:structured-macro>
+<table>
+<tr><th>Stage</th><th>Details</th></tr>
+<tr><td><strong>1. Fetch emails</strong></td><td>Gmail API / Microsoft Graph → raw email (MIME/HTML)</td></tr>
+<tr><td><strong>2. Pre-process</strong></td><td>Decode base64, strip HTML tags, truncate to 1500 chars per email, bundle into one prompt</td></tr>
+<tr><td><strong>3. Claude extraction</strong></td><td>Extracts: <code>serviceName</code>, <code>amount</code>, <code>currency</code>, <code>billingCycle</code>, <code>renewalDate</code>, <code>category</code></td></tr>
+<tr><td><strong>4. Post-processing</strong></td><td>Normalize names (lowercase, strip non-alpha), compare against existing subscriptions, annotate: <code>isExisting</code>, <code>priceChanged</code>, <code>existingId</code></td></tr>
+<tr><td><strong>5. User review</strong></td><td>Return candidates to UI — user selects which to save as Subscription rows</td></tr>
+</table>
 
 <h4>2. Insurance Document Extraction</h4>
 <table>
@@ -651,26 +544,16 @@ Post-processing:
 <tr><td>Persisted?</td><td>Yes — stored as <code>InsuranceDocument.analysisResult</code> (JSON column)</td></tr>
 </table>
 
-<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">text</ac:parameter><ac:plain-text-body><![CDATA[
-Input pipeline:
-  Server disk (/uploads/insurance/{userId}/{file})
-    → fs.readFile() → Buffer
-    → Buffer.toString("base64")
-    → PDF: {type:"document", source:{type:"base64", media_type:"application/pdf", data}}
-    → Image: {type:"image", source:{type:"base64", media_type:"image/png|jpeg", data}}
+<p><ac:image ac:width="900"><ri:attachment ri:filename="04-insurance-analysis.png" /></ac:image></p>
 
-Claude extracts:
-  {
-    coverageType, coveredItems[], deductible,
-    coverageLimits, exclusions[], effectiveDates {start, end},
-    keyTerms[], summary
-  }
-
-Post-processing:
-  - Regex extract JSON from response: /{[\s\S]*}/
-  - Store in DB: parsedStatus → "completed", analysisResult → JSON
-  - On error: parsedStatus → "failed"
-]]></ac:plain-text-body></ac:structured-macro>
+<table>
+<tr><th>Stage</th><th>Details</th></tr>
+<tr><td><strong>1. Read file</strong></td><td>Server disk <code>/uploads/insurance/{userId}/{file}</code> → <code>fs.readFile()</code> → Buffer → base64</td></tr>
+<tr><td><strong>2. Format for Claude</strong></td><td>PDF: <code>{type:"document", media_type:"application/pdf"}</code> · Image: <code>{type:"image", media_type:"image/png|jpeg"}</code></td></tr>
+<tr><td><strong>3. Claude extraction</strong></td><td>Extracts: <code>coverageType</code>, <code>coveredItems[]</code>, <code>deductible</code>, <code>coverageLimits</code>, <code>exclusions[]</code>, <code>effectiveDates</code>, <code>keyTerms[]</code>, <code>summary</code></td></tr>
+<tr><td><strong>4. Post-processing</strong></td><td>Regex extract JSON from response (<code>/{[\\s\\S]*}/</code>), store in DB: <code>parsedStatus → "completed"</code>, <code>analysisResult → JSON</code></td></tr>
+<tr><td><strong>5. Error handling</strong></td><td>On failure: <code>parsedStatus → "failed"</code>, error logged</td></tr>
+</table>
 
 <h4>3. Cross-Policy Coverage Insights</h4>
 <table>
@@ -683,45 +566,26 @@ Post-processing:
 <tr><td>Persisted?</td><td>Client-side only (localStorage cache, key: <code>hugo_ai_insights</code>)</td></tr>
 </table>
 
-<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">text</ac:parameter><ac:plain-text-body><![CDATA[
-Input pipeline:
-  DB: all InsurancePolicy (status: active)
-    → include InsuranceDocument (parsedStatus: completed)
-    → filter policies with ≥ 1 analyzed doc
-    → build portfolio summary:
-      [{provider, type, policyNumber, analyses: [analysisResult, ...]}]
+<p><ac:image ac:width="900"><ri:attachment ri:filename="05-cross-policy-insights.png" /></ac:image></p>
 
-Claude identifies:
-  - Overlaps: same coverage from multiple policies (wasteful)
-  - Gaps: important coverage types missing entirely
-  - Suggestions: money-saving or coverage-improvement ideas
-
-Output:
-  [{type, title, description, severity, relatedPolicies[]}]
-
-Caching:
-  - Stored in localStorage as {insights[], cachedAt: timestamp}
-  - Invalidated when: refreshKey increments (new doc analyzed) or manual refresh
-  - NOT persisted server-side (computed on demand)
-]]></ac:plain-text-body></ac:structured-macro>
+<table>
+<tr><th>Stage</th><th>Details</th></tr>
+<tr><td><strong>1. Load portfolio</strong></td><td>All <code>InsurancePolicy</code> (status: active) → include analyzed documents → build summary array</td></tr>
+<tr><td><strong>2. Claude analysis</strong></td><td><strong>Overlaps:</strong> same coverage from multiple policies · <strong>Gaps:</strong> important coverage missing · <strong>Suggestions:</strong> money-saving ideas</td></tr>
+<tr><td><strong>3. Output format</strong></td><td><code>[{type, title, description, severity, relatedPolicies[]}]</code></td></tr>
+<tr><td><strong>4. Caching</strong></td><td>localStorage: <code>{insights[], cachedAt}</code> — invalidated on new doc analysis or manual refresh. Falls back to cache on API errors.</td></tr>
+</table>
 
 <h3>Amount Processing Pipeline</h3>
-<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">text</ac:parameter><ac:plain-text-body><![CDATA[
-User input         Zod transform           Database              API response
-─────────────────────────────────────────────────────────────────────────────
-"9.99"      →  Math.round(9.99 * 100)  →  amountCents: 999  →  "9.99"
-(decimal         = 999 (int cents)         (Int column)         (centsToDisplay)
- string)
-
-Annual → Monthly conversion:
-  amountCents: 11988 (annual)  →  Math.round(11988 / 12) = 999 (monthly)
-
-Multi-currency display:
-  amountCents (in original currency)
-    → fetch exchange rates from Frankfurter.app (1-hour ISR cache)
-    → Math.round(cents / rate[displayCurrency])
-    → format with user's displayCurrency symbol
-]]></ac:plain-text-body></ac:structured-macro>
+<table>
+<tr><th>Step</th><th>Example</th><th>Description</th></tr>
+<tr><td><strong>User input</strong></td><td><code>"9.99"</code> (decimal string)</td><td>Zod schema accepts decimal string from form</td></tr>
+<tr><td><strong>Zod transform</strong></td><td><code>Math.round(9.99 × 100) = 999</code></td><td>Convert to integer cents</td></tr>
+<tr><td><strong>Database</strong></td><td><code>amountCents: 999</code> (Int column)</td><td>Stored as integer — no floating point issues</td></tr>
+<tr><td><strong>API response</strong></td><td><code>"9.99"</code></td><td><code>centsToDisplay()</code> converts back to decimal string</td></tr>
+</table>
+<p><strong>Annual → Monthly:</strong> <code>Math.round(11988 / 12) = 999</code> cents/month</p>
+<p><strong>Multi-currency:</strong> Fetch exchange rates from Frankfurter.app (1-hour ISR cache) → <code>Math.round(cents / rate)</code> → format with user's display currency symbol</p>
 
 <h3>Data Persistence Summary</h3>
 <table>
@@ -1274,6 +1138,31 @@ async function publish() {
     try {
       const result = await upsertPage(page.title, page.content(), homepageId);
       console.log(`    → ${result._links?.webui ? `https://hugodocu.atlassian.net/wiki${result._links.webui}` : "OK"}\n`);
+
+      // Upload images to relevant pages
+      if (page.title === "Hugo — Process Flows") {
+        console.log("  📎 Uploading process flow diagrams...");
+        await uploadImages(result.id, [
+          "01-system-architecture.png", "02-auth-registration.png",
+          "03-email-import.png", "04-insurance-analysis.png",
+          "05-cross-policy-insights.png", "06-household-sharing.png",
+        ]);
+      }
+      if (page.title === "Hugo — Data Processing & AI Pipeline") {
+        console.log("  📎 Uploading pipeline diagrams...");
+        await uploadImages(result.id, [
+          "01-system-architecture.png", "03-email-import.png",
+          "04-insurance-analysis.png", "05-cross-policy-insights.png",
+        ]);
+      }
+      if (page.title === "Hugo — Brand & Design System") {
+        console.log("  📎 Uploading brand identity images...");
+        await uploadImages(result.id, [
+          "brand-proposal-a.png", "brand-proposal-b.png",
+          "brand-proposal-c.png", "brand-logo-explorations.png",
+          "brand-dashboard-mockup.png", "brand-landing-page.png",
+        ]);
+      }
     } catch (err) {
       console.error(`  ✗ Failed: ${err.message}\n`);
     }

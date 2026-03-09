@@ -71,7 +71,13 @@ export function InsuranceAIInsights({ hasAnalyzedDocs, refreshKey }: { hasAnalyz
       const res = await fetch("/api/insurance/analyze-all", { method: "POST" });
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || t("insuranceAI.analysisFailed"));
+        const errMsg = data.error || t("insuranceAI.analysisFailed");
+        setError(errMsg);
+        // Fall back to cached insights so the user still sees previous results
+        const cached = loadCachedInsights();
+        if (cached?.insights?.length) {
+          setInsights(cached.insights);
+        }
         return;
       }
 
@@ -85,6 +91,11 @@ export function InsuranceAIInsights({ hasAnalyzedDocs, refreshKey }: { hasAnalyz
       saveCachedInsights(data.insights);
     } catch {
       setError(t("insuranceAI.analysisFailed"));
+      // Fall back to cached insights on network errors too
+      const cached = loadCachedInsights();
+      if (cached?.insights?.length) {
+        setInsights(cached.insights);
+      }
     } finally {
       setLoading(false);
     }
@@ -140,7 +151,12 @@ export function InsuranceAIInsights({ hasAnalyzedDocs, refreshKey }: { hasAnalyz
           </div>
         )}
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <div className={`text-sm rounded-md px-3 py-2 mb-2 ${insights?.length ? "bg-amber-50 text-amber-700 border border-amber-200" : "text-destructive"}`}>
+            {error}
+            {insights?.length ? <span className="block text-xs mt-1 text-amber-600/70">Showing cached results from your last successful analysis.</span> : null}
+          </div>
+        )}
 
         {!loading && insights && insights.length === 0 && (
           <p className="text-sm text-muted-foreground py-2">{t("insuranceAI.noIssuesFound")}</p>
