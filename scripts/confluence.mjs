@@ -1110,6 +1110,397 @@ function apiExamples() {
 `;
 }
 
+function userFlowsAndPermissions() {
+  return `
+<h2>User Flows &amp; Permissions</h2>
+<p>This page documents every user-facing flow in Hugo, the authorization rules that govern each action, and the data ownership model.</p>
+
+<h3>1. Authentication</h3>
+
+<h4>1.1 Registration</h4>
+<table>
+<tr><th>Property</th><th>Details</th></tr>
+<tr><td>Endpoint</td><td><code>POST /api/auth/register</code></td></tr>
+<tr><td>Access</td><td>Public (no auth required)</td></tr>
+<tr><td>Validation</td><td>Email: valid format (Zod) · Password: minimum 8 characters</td></tr>
+<tr><td>Password storage</td><td>bcrypt hash, cost factor 12 — never stored in plain text</td></tr>
+<tr><td>Duplicate check</td><td>409 Conflict if email already exists</td></tr>
+<tr><td>Defaults</td><td><code>displayCurrency: "USD"</code>, <code>emailReminders: true</code>, no household</td></tr>
+</table>
+
+<h4>1.2 Login</h4>
+<table>
+<tr><th>Property</th><th>Details</th></tr>
+<tr><td>Provider</td><td>NextAuth.js v5 Credentials provider</td></tr>
+<tr><td>Strategy</td><td>JWT (stateless, signed tokens)</td></tr>
+<tr><td>Process</td><td>Email + password → bcrypt compare → JWT issued (token.id = user.id)</td></tr>
+<tr><td>Session duration</td><td>Default NextAuth (30 days)</td></tr>
+<tr><td>Redirect</td><td>Success → <code>?next</code> param or <code>/hub</code> · Failure → stay on page with error</td></tr>
+<tr><td>Household hint</td><td>Login page shows pre-filled email when arriving via household invite link</td></tr>
+</table>
+
+<h4>1.3 Forgot / Reset Password</h4>
+<table>
+<tr><th>Step</th><th>Endpoint</th><th>Details</th></tr>
+<tr><td><strong>Request reset</strong></td><td><code>POST /api/auth/forgot-password</code></td><td>Always returns 200 (prevents email enumeration). Generates 32-byte random token, SHA-256 hashed in DB. Sends email via Resend with 15-minute expiry link.</td></tr>
+<tr><td><strong>Reset password</strong></td><td><code>POST /api/auth/reset-password</code></td><td>Hashes submitted token with SHA-256, matches against DB. If valid and not expired: updates password hash, clears reset token. If invalid/expired: 400 error.</td></tr>
+</table>
+
+<h3>2. Route Protection</h3>
+
+<h4>2.1 Middleware (<code>middleware.ts</code>)</h4>
+<p>All routes are protected by default. The middleware redirects unauthenticated users to <code>/login</code>.</p>
+
+<p><strong>Public routes (no auth required):</strong></p>
+<table>
+<tr><th>Route</th><th>Purpose</th></tr>
+<tr><td><code>/</code></td><td>Landing page</td></tr>
+<tr><td><code>/login</code>, <code>/register</code></td><td>Authentication</td></tr>
+<tr><td><code>/forgot-password</code>, <code>/reset-password</code></td><td>Password recovery</td></tr>
+<tr><td><code>/pricing</code>, <code>/about</code>, <code>/faq</code></td><td>Public info pages</td></tr>
+<tr><td><code>/features/*</code></td><td>Feature marketing pages</td></tr>
+<tr><td><code>/gmail</code>, <code>/outlook</code></td><td>OAuth callback handlers</td></tr>
+</table>
+
+<p><strong>Excluded from middleware:</strong> <code>api/auth</code>, <code>_next/static</code>, <code>_next/image</code>, <code>favicon.ico</code></p>
+
+<h4>2.2 API Route Auth Pattern</h4>
+<p>Every protected API route verifies the session:</p>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">typescript</ac:parameter><ac:plain-text-body><![CDATA[const session = await auth();
+if (!session?.user?.id) {
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+}]]></ac:plain-text-body></ac:structured-macro>
+
+<h3>3. Resource Ownership &amp; Authorization</h3>
+
+<p>Hugo uses a simple ownership model: the user who creates a resource is its owner. Only owners can edit or delete.</p>
+
+<table>
+<tr><th>Resource</th><th>Read</th><th>Create</th><th>Edit / Delete</th></tr>
+<tr><td>Subscription</td><td>Owner + household members</td><td>Any authenticated user</td><td>Owner only</td></tr>
+<tr><td>Insurance Policy</td><td>Owner + household members</td><td>Any authenticated user</td><td>Owner only</td></tr>
+<tr><td>Insurance Document</td><td>Owner + household members</td><td>Policy owner only</td><td>Policy owner only</td></tr>
+<tr><td>Document Analysis</td><td>Owner + household members</td><td>Owner + household members (trigger)</td><td>N/A (immutable)</td></tr>
+<tr><td>Subscription History</td><td>Owner only</td><td>Auto-created on edit</td><td>N/A (immutable)</td></tr>
+<tr><td>Household</td><td>All members</td><td>Any authenticated user (max 1)</td><td>Owner only</td></tr>
+<tr><td>User Settings</td><td>Self only</td><td>N/A</td><td>Self only</td></tr>
+</table>
+
+<p><strong>Household sharing rule:</strong> When a resource belongs to a household, all members can view it. Non-owners see a <code>readonly: true</code> flag — the UI hides edit/delete buttons for these items.</p>
+
+<h3>4. Household Flows</h3>
+
+<h4>4.1 Create Household</h4>
+<table>
+<tr><th>Property</th><th>Details</th></tr>
+<tr><td>Endpoint</td><td><code>POST /api/household</code></td></tr>
+<tr><td>Input</td><td><code>{ name: string }</code> (1–80 chars)</td></tr>
+<tr><td>Constraint</td><td>One household per user (409 if already owns one)</td></tr>
+<tr><td>Side effects</td><td>Creates Household + auto-creates HouseholdMember (role: "owner") + sets User.householdId</td></tr>
+</table>
+
+<h4>4.2 Invite Flow</h4>
+<table>
+<tr><th>Step</th><th>Details</th></tr>
+<tr><td><strong>1. Owner sends invite</strong></td><td><code>POST /api/household/invite</code> — Only household owner can invite. Creates a JWT (signed with NEXTAUTH_SECRET, 7-day expiry) containing <code>householdId</code> + <code>invitedEmail</code>. Sends email via Resend with accept link.</td></tr>
+<tr><td><strong>2. Recipient clicks link</strong></td><td><code>GET /api/household/accept?token={jwt}</code> — If not logged in: redirects to <code>/login</code> with email hint and return URL.</td></tr>
+<tr><td><strong>3. Email verification</strong></td><td>If logged-in user's email ≠ invited email → redirects back to login with hint. This prevents accepting invites with the wrong account.</td></tr>
+<tr><td><strong>4. Join household</strong></td><td>Upserts HouseholdMember (role: "member"), sets User.householdId. Idempotent — safe to click link twice. Redirects to <code>/dashboard?joined=1</code>.</td></tr>
+</table>
+
+<h4>4.3 Leave / Delete Household</h4>
+<table>
+<tr><th>Role</th><th>Behavior</th></tr>
+<tr><td><strong>Member leaves</strong></td><td>Deletes own HouseholdMember, clears own User.householdId. Personal data preserved — just unshared.</td></tr>
+<tr><td><strong>Owner deletes</strong></td><td>Deletes all HouseholdMembers, unsets householdId on all shared subscriptions/policies (data preserved, just unshared), clears all member User.householdIds, deletes Household.</td></tr>
+</table>
+
+<h4>4.4 Shared Data Visibility</h4>
+<p>When a user is in a household, <code>GET /api/subscriptions</code> and <code>GET /api/insurance</code> return:</p>
+<ul>
+<li>All resources where <code>userId = currentUser</code> (owned items)</li>
+<li>All resources where <code>householdId = user's householdId</code> (shared items)</li>
+<li>Shared items not created by the user are marked <code>readonly: true</code></li>
+</ul>
+
+<h3>5. GDPR &amp; Account Deletion</h3>
+
+<table>
+<tr><th>Property</th><th>Details</th></tr>
+<tr><td>Endpoint</td><td><code>DELETE /api/account</code></td></tr>
+<tr><td>Access</td><td>Authenticated (self only)</td></tr>
+<tr><td>Cascade deletions</td><td>User → Subscriptions → SubscriptionHistory, User → InsurancePolicies → InsuranceDocuments, User → HouseholdMember, User (as owner) → Household</td></tr>
+<tr><td>SetNull behavior</td><td>Shared subscriptions/policies owned by other users: <code>householdId</code> set to null (data preserved, just unlinked)</td></tr>
+<tr><td>File cleanup</td><td>Uploaded insurance documents on disk remain (not auto-deleted — potential improvement)</td></tr>
+</table>
+
+<h4>Database Cascade Rules</h4>
+<table>
+<tr><th>Relationship</th><th>onDelete</th></tr>
+<tr><td>User → Subscriptions</td><td>Cascade</td></tr>
+<tr><td>User → SubscriptionHistory</td><td>Cascade</td></tr>
+<tr><td>User → InsurancePolicies</td><td>Cascade</td></tr>
+<tr><td>User → HouseholdMember</td><td>Cascade</td></tr>
+<tr><td>User → Household (as owner)</td><td>Cascade</td></tr>
+<tr><td>Household → HouseholdMembers</td><td>Cascade</td></tr>
+<tr><td>Household → Subscriptions (householdId)</td><td>SetNull</td></tr>
+<tr><td>Household → InsurancePolicies (householdId)</td><td>SetNull</td></tr>
+<tr><td>Subscription → SubscriptionHistory</td><td>Cascade</td></tr>
+<tr><td>InsurancePolicy → InsuranceDocuments</td><td>Cascade</td></tr>
+</table>
+
+<h3>6. Security Boundaries</h3>
+<table>
+<tr><th>Boundary</th><th>Protection</th></tr>
+<tr><td>User input</td><td>Zod schema validation on all API routes</td></tr>
+<tr><td>Authentication</td><td>NextAuth JWT, middleware route guard</td></tr>
+<tr><td>Authorization</td><td>Ownership check on every PATCH/DELETE (<code>userId</code> match)</td></tr>
+<tr><td>Passwords</td><td>bcrypt hash (cost 12), never stored in plain text</td></tr>
+<tr><td>OAuth tokens</td><td>Stored encrypted in DB, never exposed to client</td></tr>
+<tr><td>File uploads</td><td>10 MB limit, type whitelist (PDF/PNG/JPG), random filenames</td></tr>
+<tr><td>Reset tokens</td><td>SHA-256 hashed in DB, raw token only in email, 15-minute expiry</td></tr>
+<tr><td>Household invites</td><td>JWT-signed (7-day expiry), email verification on accept</td></tr>
+<tr><td>Cron endpoint</td><td>Bearer token auth (<code>CRON_SECRET</code>)</td></tr>
+<tr><td>Email enumeration</td><td>Forgot-password always returns 200 OK regardless of email existence</td></tr>
+</table>
+
+<h3>7. API Route Reference</h3>
+<table>
+<tr><th>Method</th><th>Route</th><th>Auth</th><th>Owner Check</th></tr>
+<tr><td>POST</td><td><code>/api/auth/register</code></td><td>No</td><td>N/A</td></tr>
+<tr><td>POST</td><td><code>/api/auth/forgot-password</code></td><td>No</td><td>N/A</td></tr>
+<tr><td>POST</td><td><code>/api/auth/reset-password</code></td><td>No</td><td>N/A</td></tr>
+<tr><td>DELETE</td><td><code>/api/account</code></td><td>Yes</td><td>Self</td></tr>
+<tr><td>GET · PATCH</td><td><code>/api/me</code></td><td>Yes</td><td>Self</td></tr>
+<tr><td>GET · POST</td><td><code>/api/subscriptions</code></td><td>Yes</td><td>—</td></tr>
+<tr><td>PATCH · DELETE</td><td><code>/api/subscriptions/[id]</code></td><td>Yes</td><td>Owner</td></tr>
+<tr><td>GET</td><td><code>/api/subscriptions/[id]/history</code></td><td>Yes</td><td>Owner</td></tr>
+<tr><td>GET · POST</td><td><code>/api/insurance</code></td><td>Yes</td><td>—</td></tr>
+<tr><td>PATCH · DELETE</td><td><code>/api/insurance/[id]</code></td><td>Yes</td><td>Owner</td></tr>
+<tr><td>GET · POST · DELETE</td><td><code>/api/insurance/[id]/documents</code></td><td>Yes</td><td>Owner (write) · Household (read)</td></tr>
+<tr><td>POST</td><td><code>/api/insurance/[id]/documents/analyze</code></td><td>Yes</td><td>Owner or household</td></tr>
+<tr><td>POST</td><td><code>/api/insurance/analyze-all</code></td><td>Yes</td><td>—</td></tr>
+<tr><td>POST</td><td><code>/api/household</code></td><td>Yes</td><td>—</td></tr>
+<tr><td>GET</td><td><code>/api/household</code></td><td>Yes</td><td>—</td></tr>
+<tr><td>POST</td><td><code>/api/household/invite</code></td><td>Yes</td><td>Household owner</td></tr>
+<tr><td>GET</td><td><code>/api/household/accept</code></td><td>Yes*</td><td>Token + email match</td></tr>
+<tr><td>DELETE</td><td><code>/api/household/leave</code></td><td>Yes</td><td>In household</td></tr>
+<tr><td>GET</td><td><code>/api/gmail/connect</code></td><td>Yes</td><td>—</td></tr>
+<tr><td>POST</td><td><code>/api/gmail/import</code></td><td>Yes</td><td>Self</td></tr>
+<tr><td>DELETE</td><td><code>/api/gmail/disconnect</code></td><td>Yes</td><td>Self</td></tr>
+<tr><td>GET</td><td><code>/api/outlook/connect</code></td><td>Yes</td><td>—</td></tr>
+<tr><td>POST</td><td><code>/api/outlook/import</code></td><td>Yes</td><td>Self</td></tr>
+<tr><td>DELETE</td><td><code>/api/outlook/disconnect</code></td><td>Yes</td><td>Self</td></tr>
+<tr><td>GET</td><td><code>/api/hub</code></td><td>Yes</td><td>—</td></tr>
+<tr><td>GET</td><td><code>/api/cron/renewal-alerts</code></td><td>Bearer</td><td>CRON_SECRET</td></tr>
+</table>
+<p><em>* Redirects to login if unauthenticated, then re-attempts with session.</em></p>
+`;
+}
+
+function featureGuide() {
+  return `
+<h2>Feature Guide</h2>
+<p>A comprehensive walkthrough of every feature in Hugo — how it works, what the user sees, and how data flows through the system.</p>
+
+<h3>1. Unified Hub</h3>
+<p>The Hub (<code>/hub</code>) is the central dashboard combining subscriptions and insurance into a single overview.</p>
+<table>
+<tr><th>Element</th><th>Details</th></tr>
+<tr><td>Combined monthly spend</td><td>Sum of all subscription monthly equivalents + insurance premiums, converted to display currency</td></tr>
+<tr><td>Donut chart</td><td>Visual split between subscription spend (blue) and insurance spend (green)</td></tr>
+<tr><td>Upcoming renewals</td><td>Next 30 days — both subscriptions and policies, sorted by date</td></tr>
+<tr><td>Smart recommendations</td><td>Auto-generated tips: duplicate services, high-spend categories, trial expirations, annual savings opportunities, insurance gaps/overlaps</td></tr>
+<tr><td>Quick actions</td><td>Links to Subscription Dashboard and Insurance Manager</td></tr>
+</table>
+
+<h4>Recommendation Engine</h4>
+<table>
+<tr><th>Rule</th><th>Type</th><th>Trigger</th></tr>
+<tr><td>Duplicate subscriptions</td><td>Warning</td><td>Case-insensitive name match across subscriptions</td></tr>
+<tr><td>High-spend category</td><td>Info</td><td>Single category exceeds 40% of total spending</td></tr>
+<tr><td>Trial expiring</td><td>Warning</td><td>Trial end date within 7 days</td></tr>
+<tr><td>Annual savings</td><td>Savings</td><td>3+ monthly subscriptions → suggest switching to annual</td></tr>
+<tr><td>Insurance gaps</td><td>Info</td><td>Missing recommended types: health, home, car, liability</td></tr>
+<tr><td>Insurance overlaps</td><td>Warning</td><td>2+ policies of the same type</td></tr>
+</table>
+
+<h3>2. Subscription Tracking</h3>
+<p>The Subscription Dashboard (<code>/dashboard</code>) is the primary module for managing recurring charges.</p>
+
+<h4>Adding a Subscription</h4>
+<p>Users fill in a form with: name, category, amount, currency, billing cycle, renewal date, status, and optional notes/savings hint. The amount is entered as a decimal string (e.g. "9.99") and stored as integer cents (999) to avoid floating-point issues.</p>
+
+<h4>Categories (13)</h4>
+<p>Streaming · Music · Gaming · News &amp; Media · Fitness · Food · Software · Cloud Storage · Education · VPN &amp; Security · Productivity · Shopping · Other</p>
+
+<h4>Statuses</h4>
+<table>
+<tr><th>Status</th><th>Behavior</th></tr>
+<tr><td>Active</td><td>Counted in totals and charts, included in renewal alerts</td></tr>
+<tr><td>Paused</td><td>Shown with reduced opacity, excluded from spending totals</td></tr>
+<tr><td>Trial</td><td>Shows countdown badge ("ends in X days"), included in trial-expiry recommendations</td></tr>
+<tr><td>Cancelled</td><td>Visible in list but excluded from all calculations</td></tr>
+</table>
+
+<h4>Change History</h4>
+<p>Every edit to a subscription creates an audit trail in <code>SubscriptionHistory</code>. Tracked fields: name, amount, billing cycle, status, renewal date, category, currency. Users can view history via a dialog showing field, old value, new value, and relative timestamp.</p>
+
+<h4>Cancel Calculator</h4>
+<p>A toggle mode on the dashboard. When enabled, checkboxes appear on active subscriptions. Selecting subscriptions shows how much the user would save monthly/annually if they cancelled those services.</p>
+
+<h4>Charts</h4>
+<ul>
+<li><strong>Donut chart:</strong> Spending breakdown by category</li>
+<li><strong>Bar chart:</strong> 6-month spending trend (from <code>/api/spending-history</code>)</li>
+</ul>
+
+<h3>3. Multi-Currency Support</h3>
+<table>
+<tr><th>Property</th><th>Details</th></tr>
+<tr><td>Supported currencies</td><td>USD, EUR, GBP, SEK, NOK, DKK, CHF, CAD, AUD, JPY</td></tr>
+<tr><td>Exchange rate source</td><td>Frankfurter.app (free, no API key)</td></tr>
+<tr><td>Cache</td><td>Next.js ISR — revalidates every hour (<code>revalidate: 3600</code>)</td></tr>
+<tr><td>Fallback</td><td>If API fails: USD-only rates (<code>{ USD: 1 }</code>)</td></tr>
+<tr><td>Storage</td><td>Amounts stored in original currency. Display currency is a user preference (<code>User.displayCurrency</code>).</td></tr>
+<tr><td>Conversion</td><td><code>Math.round(cents × (displayRate / originalRate))</code></td></tr>
+<tr><td>Formatting</td><td>Prefix symbols ($, €, £) for most currencies. Suffix format for Scandinavian: <code>9.99 kr.</code></td></tr>
+</table>
+
+<h3>4. Insurance Policy Management</h3>
+<p>The Insurance module (<code>/insurance</code>) tracks insurance policies with document analysis capabilities.</p>
+
+<h4>Policy Types (9)</h4>
+<p>Health · Car · Home · Life · Travel · Pet · Contents · Liability · Other</p>
+
+<h4>Policy Fields</h4>
+<p>Provider, type, premium (decimal → cents), currency, billing cycle, renewal date, policy number (optional), status (active/cancelled/expired), coverage notes (optional, max 500 chars).</p>
+
+<h4>Coverage Summary</h4>
+<p>The insurance page shows a grid of coverage cards — one per type — sorted by total spend. Each card shows the number of policies and combined monthly premium for that type.</p>
+
+<h3>5. AI Document Analysis</h3>
+<p>Users can upload insurance documents (PDF, PNG, JPG — max 10 MB) and have Claude AI extract structured coverage information.</p>
+
+<h4>Upload &amp; Analyze Flow</h4>
+<table>
+<tr><th>Step</th><th>Details</th></tr>
+<tr><td>1. Upload file</td><td>File saved to <code>/public/uploads/insurance/{userId}/{safeName}</code></td></tr>
+<tr><td>2. Create document record</td><td>DB entry with <code>parsedStatus: "pending"</code></td></tr>
+<tr><td>3. Trigger analysis</td><td>User clicks analyze button (✨ icon). Status → "processing"</td></tr>
+<tr><td>4. Send to Claude</td><td>File read from disk → base64 → sent to Claude Haiku 4.5 with extraction prompt</td></tr>
+<tr><td>5. Parse result</td><td>Regex extracts JSON from response. Status → "completed" (or "failed")</td></tr>
+<tr><td>6. Display</td><td>Expandable card shows extracted coverage details</td></tr>
+</table>
+
+<h4>Extracted Fields</h4>
+<p><code>coverageType</code> · <code>coveredItems[]</code> · <code>deductible</code> · <code>coverageLimits</code> · <code>exclusions[]</code> · <code>effectiveDates {start, end}</code> · <code>keyTerms[]</code> (max 5) · <code>summary</code> (2–3 sentences)</p>
+
+<h3>6. AI Cross-Policy Insights</h3>
+<p>Once documents are analyzed, Hugo automatically compares all policies to find overlaps, gaps, and optimization opportunities.</p>
+
+<table>
+<tr><th>Property</th><th>Details</th></tr>
+<tr><td>Trigger</td><td>Auto on page load (if no cache), after new analysis, or manual refresh button</td></tr>
+<tr><td>Input</td><td>All active policies with completed document analyses</td></tr>
+<tr><td>Model</td><td>Claude Haiku 4.5, 2048 max tokens</td></tr>
+<tr><td>Output types</td><td><strong>Overlap</strong> (amber) — same coverage from multiple policies · <strong>Gap</strong> (blue) — important missing coverage · <strong>Suggestion</strong> (green) — money-saving ideas</td></tr>
+<tr><td>Severity levels</td><td>High (red badge) · Medium (amber badge) · Low (gray badge)</td></tr>
+<tr><td>Caching</td><td>localStorage (<code>hugo_ai_insights</code>) with timestamp. Falls back to cache on API errors (e.g. credits exhausted). Invalidated on new document analysis or manual refresh.</td></tr>
+</table>
+
+<h3>7. Email Import (Gmail &amp; Outlook)</h3>
+<p>Hugo can scan email inboxes to automatically detect subscriptions from receipts and billing notifications.</p>
+
+<h4>Connection Flow</h4>
+<table>
+<tr><th>Step</th><th>Gmail</th><th>Outlook</th></tr>
+<tr><td>1. OAuth</td><td>Google OAuth2, scope: <code>gmail.readonly</code></td><td>Microsoft OAuth2, scopes: <code>offline_access Mail.Read</code></td></tr>
+<tr><td>2. State security</td><td colspan="2">JWT signed with NEXTAUTH_SECRET (1-hour expiry) containing userId</td></tr>
+<tr><td>3. Token storage</td><td><code>gmailAccessToken</code>, <code>gmailRefreshToken</code>, <code>gmailTokenExpiry</code></td><td><code>outlookAccessToken</code>, <code>outlookRefreshToken</code>, <code>outlookTokenExpiry</code></td></tr>
+<tr><td>4. Auto-refresh</td><td colspan="2">Tokens automatically refreshed if expired before use</td></tr>
+</table>
+
+<h4>Import Flow</h4>
+<table>
+<tr><th>Step</th><th>Details</th></tr>
+<tr><td>1. Search emails</td><td>Last 180 days, keywords: receipt, invoice, subscription, renewal, billing, charged, payment. Max 50 emails.</td></tr>
+<tr><td>2. Pre-process</td><td>Decode base64/strip HTML, truncate to 1500 chars per email, bundle into one prompt</td></tr>
+<tr><td>3. AI extraction</td><td>Claude Haiku extracts: <code>serviceName</code>, <code>amount</code>, <code>currency</code>, <code>billingCycle</code>, <code>renewalDate</code>, <code>category</code></td></tr>
+<tr><td>4. Duplicate detection</td><td>Normalized name comparison against existing subscriptions. Annotates: <code>isExisting</code>, <code>priceChanged</code>, <code>existingId</code></td></tr>
+<tr><td>5. User review</td><td>Modal shows candidates with checkboxes. New subscriptions auto-selected. Price changes highlighted in orange.</td></tr>
+<tr><td>6. Save</td><td>Selected candidates created as Subscription rows</td></tr>
+</table>
+
+<h4>Import Modal States</h4>
+<p><strong>idle</strong> → "Connect Gmail/Outlook" button · <strong>scanning</strong> → spinner · <strong>review</strong> → candidate list with checkboxes · <strong>importing</strong> → saving selected · <strong>done</strong> → success message · <strong>error</strong> → error message</p>
+
+<h3>8. Household Sharing</h3>
+<p>Households allow family members or partners to share a combined view of all subscriptions and insurance policies.</p>
+
+<h4>What Gets Shared</h4>
+<ul>
+<li>All subscriptions tagged with the household ID</li>
+<li>All insurance policies tagged with the household ID</li>
+<li>Document analysis results (read-only for non-owners)</li>
+<li>Combined totals in the Hub overview</li>
+</ul>
+
+<h4>What Stays Private</h4>
+<ul>
+<li>OAuth tokens (Gmail/Outlook connections are per-user)</li>
+<li>User settings (display currency, email preferences)</li>
+<li>Subscription change history (visible only to owner)</li>
+</ul>
+
+<p>See the <em>User Flows &amp; Permissions</em> page for the full invite, accept, and leave flows.</p>
+
+<h3>9. Renewal Alerts</h3>
+<table>
+<tr><th>Property</th><th>Details</th></tr>
+<tr><td>Trigger</td><td><code>GET /api/cron/renewal-alerts</code> with Bearer token (<code>CRON_SECRET</code>)</td></tr>
+<tr><td>Frequency</td><td>Configured externally (e.g. Vercel Cron, daily)</td></tr>
+<tr><td>Upcoming renewals</td><td>Active subscriptions renewing within 7 days</td></tr>
+<tr><td>Trial alerts</td><td>Trials ending within 3 days</td></tr>
+<tr><td>Filter</td><td>Only users with <code>emailReminders: true</code></td></tr>
+<tr><td>Email template</td><td>HTML email with renewal table + trial conversion table. Sent via Resend.</td></tr>
+<tr><td>Subject</td><td>"X renewal(s) &amp; Y trial(s) expiring"</td></tr>
+</table>
+
+<h3>10. Internationalization (i18n)</h3>
+<table>
+<tr><th>Property</th><th>Details</th></tr>
+<tr><td>Supported locales</td><td>English (en) — default · Danish (da)</td></tr>
+<tr><td>Storage</td><td>localStorage key: <code>hugo_lang</code>. Falls back to browser language.</td></tr>
+<tr><td>Client hook</td><td><code>useT()</code> returns <code>t("key.path", vars)</code> function</td></tr>
+<tr><td>Server function</td><td><code>getServerT()</code> for API routes and server components</td></tr>
+<tr><td>Variable interpolation</td><td><code>t("hub.total", { count: "5" })</code> → "5 subscriptions"</td></tr>
+<tr><td>Translation files</td><td><code>src/messages/en.json</code> · <code>src/messages/da.json</code></td></tr>
+<tr><td>Toggle</td><td>Language toggle component in dashboard header</td></tr>
+</table>
+
+<h3>11. User Settings</h3>
+<table>
+<tr><th>Setting</th><th>How to change</th><th>Effect</th></tr>
+<tr><td>Display currency</td><td>Currency selector in dashboard header</td><td>All amounts converted and displayed in chosen currency</td></tr>
+<tr><td>Email reminders</td><td>Toggle in dashboard header</td><td>Enables/disables renewal alert emails</td></tr>
+<tr><td>Language</td><td>Language toggle (EN/DA)</td><td>Switches all UI text to selected locale</td></tr>
+<tr><td>Gmail connection</td><td>Connect/disconnect in dashboard</td><td>Enables email import for subscription detection</td></tr>
+<tr><td>Outlook connection</td><td>Connect/disconnect in dashboard</td><td>Same as Gmail, via Microsoft Graph</td></tr>
+</table>
+
+<h3>12. Public Pages</h3>
+<table>
+<tr><th>Page</th><th>Route</th><th>Content</th></tr>
+<tr><td>Landing</td><td><code>/</code></td><td>Hero, dashboard preview, trust logos, how-it-works, features grid, stats, brand story CTA</td></tr>
+<tr><td>Pricing</td><td><code>/pricing</code></td><td>"Completely free" — $0 price, 18-item feature checklist, "why free?" explanation</td></tr>
+<tr><td>About</td><td><code>/about</code></td><td>Brand story (Hugo named after founder's child), values, contact info</td></tr>
+<tr><td>FAQ</td><td><code>/faq</code></td><td>Accordion with common questions: security, privacy, sharing, reminders, limits</td></tr>
+<tr><td>Features (×7)</td><td><code>/features/*</code></td><td>Detailed pages: Subscription Tracking, Insurance, Multi-Currency, Email Reminders, Household Sharing, Price Detection, Cancel Calculator, Spending Insights</td></tr>
+</table>
+`;
+}
+
 // ── Publishing logic ──
 
 const PAGES = [
@@ -1123,6 +1514,8 @@ const PAGES = [
   { title: "Hugo — Process Flows", content: processFlows },
   { title: "Hugo — Data Processing & AI Pipeline", content: dataProcessingPipeline },
   { title: "Hugo — API Examples", content: apiExamples },
+  { title: "Hugo — User Flows & Permissions", content: userFlowsAndPermissions },
+  { title: "Hugo — Feature Guide", content: featureGuide },
 ];
 
 async function publish() {
