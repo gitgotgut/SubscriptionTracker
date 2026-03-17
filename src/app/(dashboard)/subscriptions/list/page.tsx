@@ -117,7 +117,7 @@ export default function SubscriptionsListPage() {
     fetch("/api/exchange-rates").then(r => r.json()).then(d => {
       setRates(d.rates ?? { USD: 1 });
     });
-  }, []);
+  }, [t]);
 
   function convert(cents: number, fromCurrency: string): number {
     const from = rates[fromCurrency] ?? 1;
