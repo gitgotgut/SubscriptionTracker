@@ -690,5 +690,48 @@
     "ctaTitle": "Ready to try it?",
     "ctaSubtitle": "Create a free account and connect Outlook in under two minutes.",
     "ctaButton": "Get started for free"
+  },
+  "policies": {
+    "privacy": {
+      "title": "Privacy Policy",
+      "lastUpdated": "Last updated March 17, 2026",
+      "intro": "At Hugo, we believe your data is yours. We're transparent about how we collect, use, and protect your information. Read on for the full details.",
+      "collectTitle": "Information We Collect",
+      "collectBody": "When you use Hugo, we collect: Your email address and hashed password for account access. Subscription details you add (names, amounts, renewal dates, categories, notes). Insurance policy information and documents you upload. Bank transcripts you upload for analysis. Gmail and Outlook OAuth tokens to fetch your billing emails (with your permission). Your language preference and display currency. Email reminder preferences. Household membership data if you join a household. Basic metadata like IP address and browser type.",
+      "useTitle": "How We Use Your Information",
+      "useBody": "We use your data to: Provide core subscription and insurance tracking. Analyze your Gmail and Outlook emails to detect new subscriptions (only when you trigger an import). Analyze insurance documents and bank transcripts using Claude AI to extract recurring charges and coverage information. Send renewal reminder emails (only if you opt in). Support household sharing by making subscriptions visible to household members. Maintain an audit trail of subscription changes. Provide multi-currency support using live exchange rates. Show spending analytics and insights. Delete your account and data when you request it.",
+      "thirdPartyTitle": "Third-Party Data Sharing",
+      "thirdPartyBody": "We share your data with the following services: Anthropic (Claude AI) — Email content (up to 1500 characters), PDF documents, and bank transcripts are sent to Claude for analysis to detect subscriptions and insurance terms. Anthropic retains this data for 30 days for security purposes. See Anthropic's privacy policy for details. Gmail/Microsoft — We request read-only access to your emails. Your email content is read into memory, analyzed, and immediately discarded. Only the subscriptions you approve are stored. Resend — Your email address, subscription names, amounts, and household names are shared for sending transactional emails (password resets, renewal reminders, household invitations). You control email reminders via your settings. Frankfurter — We use the public Frankfurter API for exchange rates. No personal data is sent. We do not share your personal data with third parties for marketing, advertising, or any purpose other than providing Hugo's core functionality. We will never sell your data.",
+      "securityTitle": "Data Security",
+      "securityBody": "Your passwords are hashed with bcryptjs before storage. OAuth tokens are stored securely and auto-refresh when expired. All data is transmitted over HTTPS/TLS encryption. Uploaded documents are stored on secure servers segregated by user. You can only access your own data. We maintain error logging and monitoring for security issues.",
+      "rightsTitle": "Your Rights (GDPR)",
+      "rightsBody": "You have the right to access all your data. You can download your account information from your settings. You have the right to delete your account and all data at any time. Visit Settings → Delete Account or email privacy@hugo.example.com. You have the right to correct your information — update it directly in the app. You have the right to data portability — export your subscriptions and insurance data from Settings. You have the right to opt-out of marketing emails (Hugo only sends transactional emails; toggle email reminders in settings). You have the right to disconnect Gmail/Outlook at any time — this immediately revokes our access and deletes stored OAuth tokens.",
+      "retentionTitle": "Data Retention",
+      "retentionBody": "Account data: Kept while your account is active; deleted when you delete your account. OAuth tokens: Kept for convenience; revoked when you disconnect. Password reset tokens: Valid for 15 minutes only. Household invitations: Valid for 7 days; not stored after expiration. Subscription history: Retained for audit trail; deleted when the subscription is deleted. Uploaded files: Deleted from disk when you delete your account or the file explicitly. Email logs: Not stored by Hugo (managed by Resend). Database backups: Retained for 30 days for disaster recovery.",
+      "contactTitle": "Contact Us",
+      "contactBody": "Have questions about your privacy? Email privacy@hugo.example.com. Need to request your data or delete your account? Use Settings → Delete Account or email privacy@hugo.example.com."
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "lastUpdated": "Last updated March 17, 2026",
+      "agreementTitle": "Agreement to Terms",
+      "agreementBody": "By using Hugo, you agree to these terms. If you don't agree with any part, please don't use the service. Hugo may update these terms at any time. Material changes will be notified via email. Your continued use of Hugo after updates means you accept the new terms.",
+      "useLicenseTitle": "Permitted Use",
+      "useLicenseBody": "Hugo is a personal financial tracking tool. You may: Track your own subscriptions and insurance policies. Import subscription data from your Gmail or Outlook inbox. Upload documents for analysis. Share subscriptions and policies with household members via Hugo's household feature. Delete your account at any time. You may not: Attempt to gain unauthorized access to Hugo or its systems. Reverse engineer, decompile, or attempt to derive the source code. Use automated tools or scrapers to extract data. Impersonate other users or create false accounts. Use Hugo for illegal purposes or to violate any law.",
+      "disclaimerTitle": "Service Provided As-Is",
+      "disclaimerBody": "Hugo is provided as-is without warranties of any kind. We do not guarantee: Uptime or continuous availability. Accuracy of AI analysis or subscription detection. Real-time accuracy of exchange rates. That Hugo is error-free or free of harmful code. AI-powered insights are for informational purposes only and are not substitutes for professional financial or insurance advice.",
+      "liabilityTitle": "Limitations of Liability",
+      "liabilityBody": "Hugo is not liable for: Indirect, incidental, or consequential damages (lost savings, missed subscription cancellations, etc.). Errors or omissions in AI analysis. Inaccurate exchange rates or pricing. Service downtime or data loss. Reliance on information provided by Hugo. The maximum liability of Hugo is limited to fees paid in the past 12 months (currently: $0, as Hugo is free). These limitations apply to the fullest extent permitted by law.",
+      "indemnificationTitle": "Indemnification",
+      "indemnificationBody": "You agree to indemnify and hold Hugo harmless from any claims, damages, or costs arising from: Your use of Hugo in violation of these terms. Your violation of any law or third-party rights. Your unauthorized access to Hugo or misuse of your account. Content you input into Hugo.",
+      "modificationsTitle": "Service Modifications",
+      "modificationsBody": "Hugo may modify or discontinue features at any time, with or without notice. We may terminate your account if: You violate these terms. Your account poses a security risk. The account is inactive for an extended period. You request account deletion.",
+      "terminationTitle": "Termination",
+      "terminationBody": "You may delete your account at any time via Settings → Delete Account. When an account is deleted, all associated data is permanently removed from Hugo's database. See the Privacy Policy for file retention details. Deletion is immediate and irreversible.",
+      "governingLawTitle": "Governing Law",
+      "governingLawBody": "These terms are governed by the laws of the United States. Any legal disputes must be brought in the appropriate courts of the United States. You waive your right to jury trial to the fullest extent permitted by law.",
+      "contactTitle": "Contact",
+      "contactBody": "Questions about these terms? Email legal@hugo.example.com. For support issues, email support@hugo.example.com."
+    }
   }
 }

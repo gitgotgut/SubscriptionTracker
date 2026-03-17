@@ -690,5 +690,48 @@
     "ctaTitle": "Klar til at prøve det?",
     "ctaSubtitle": "Opret en gratis konto og forbind Outlook på under to minutter.",
     "ctaButton": "Kom gratis i gang"
+  },
+  "policies": {
+    "privacy": {
+      "title": "Privatlivspolitik",
+      "lastUpdated": "Senest opdateret 17. marts 2026",
+      "intro": "Hos Hugo mener vi, at dine data tilhører dig. Vi er transparente om, hvordan vi indsamler, bruger og beskytter dine oplysninger. Læs videre for alle detaljer.",
+      "collectTitle": "Oplysninger, vi indsamler",
+      "collectBody": "Når du bruger Hugo, indsamler vi: Din e-mailadresse og krypteret adgangskode til kontoaccept. Abonnementsdetaljer, som du tilføjer (navne, beløb, fornyelsesdatoer, kategorier, noter). Forsikringspolitikoplysninger og dokumenter, du uploader. Bankudtog, du uploader til analyse. Gmail og Outlook OAuth-tokens for at hente dine fakturaer (med dit samtykke). Dit sprogtilvalg og viste valuta. E-mailpåmindelseerspræferencer. Husstands medlemskab, hvis du deltager i et hushold. Grundlæggende metadata såsom IP-adresse og browsertype.",
+      "useTitle": "Hvordan vi bruger dine oplysninger",
+      "useBody": "Vi bruger dine data til at: Give dig grundlæggende abonnements- og forsikringssporing. Analysere dine Gmail- og Outlook-e-mails for at registrere nye abonnementer (kun når du starter en import). Analysere forsikringsdokumenter og bankudtog ved hjælp af Claude AI for at udtrække genfunne afgifter og forsikringsoplysninger. Sende påmindelses-e-mails om fornyelse (kun hvis du vælger det). Understøtte husstands deling ved at gøre abonnementer synlige for husholdningsmedlemmer. Vedligeholde et revisorspor over abonnementsændringer. Give understøttelse af flere valutaer ved hjælp af direkte valutakurser. Vise udgiftsanalyse og indsigter. Slette din konto og data, når du anmoder det.",
+      "thirdPartyTitle": "Deling med tredjeparter",
+      "thirdPartyBody": "Vi deler dine data med følgende tjenester: Anthropic (Claude AI) — E-mailindhold (op til 1500 tegn), PDF-dokumenter og bankudtog sendes til Claude til analyse for at registrere abonnementer og forsikringsbetingelser. Anthropic beholder disse data i 30 dage for sikkerhedsformål. Se Anthropics privatlivspolitik for detaljer. Gmail/Microsoft — Vi anmoder om skrivebeskyttet adgang til dine e-mails. Dit e-mailindhold læses ind i hukommelsen, analyseres og kastes straks ud. Kun de abonnementer, du godkender, gemmes. Resend — Din e-mailadresse, abonnementnavne, beløb og husstands navne deles til afsendelse af transaktions-e-mails (nulstilling af adgangskode, fornyelsespåmindelser, husholdningsinvitationer). Du kontrollerer e-mailpåmindelser via dine indstillinger. Frankfurter — Vi bruger det offentlige Frankfurter API til valutakurser. Der sendes ingen personlige data. Vi deler dine personlige oplysninger ikke med tredjepart til marketing, reklamer eller noget formål bortset fra Hugos kernefunktionalitet. Vi sælger aldrig dine data.",
+      "securityTitle": "Datasikkerhed",
+      "securityBody": "Dine adgangskoder er hashed med bcryptjs før opbevaring. OAuth-tokens gemmes sikkert og genopfriskes automatisk ved udløb. Alle data overføres via HTTPS/TLS-kryptering. Uploadede dokumenter gemmes på sikre servere, der er adskilt efter bruger. Du kan kun få adgang til dine egne data. Vi vedligeholder fejllogning og overvågning for sikkerhedsproblemer.",
+      "rightsTitle": "Dine rettigheder (GDPR)",
+      "rightsBody": "Du har ret til at få adgang til alle dine data. Du kan hente dine kontooplysninger fra dine indstillinger. Du har ret til at slette din konto og alle data når som helst. Gå til Indstillinger → Slet konto eller send en e-mail til privacy@hugo.example.com. Du har ret til at rette dine oplysninger — opdater dem direkte i appen. Du har ret til dataportabilitet — eksportér dine abonnements- og forsikringsdata fra indstillinger. Du har ret til at fravælge marketinge-mails (Hugo sender kun transaktions-e-mails; tænd e-mailpåmindelser fra i indstillinger). Du har ret til at afbryde Gmail/Outlook når som helst — dette tilbagekalder straks vores adgang og sletter gemte OAuth-tokens.",
+      "retentionTitle": "Databevarelse",
+      "retentionBody": "Kontooplysninger: Bevares, mens din konto er aktiv; slettes når du sletter din konto. OAuth-tokens: Bevares for bekvemmelighed; tilbagekaldt når du afbryder. Nulstilling af adgangskodetoken: Gyldig i kun 15 minutter. Husholdningsinvitationer: Gyldig i 7 dage; gemmes ikke efter udløb. Abonnements historie: Bevares til revisorsspor; slettes når abonnementet slettes. Uploadede filer: Slettes fra disk, når du sletter din konto eller filen eksplicit. E-mail-logge: Gemmes ikke af Hugo (administreret af Resend). Database-sikkerhedskopier: Bevares i 30 dage til katastrofe gendannelse.",
+      "contactTitle": "Kontakt os",
+      "contactBody": "Har du spørgsmål om dit privatliv? Send en e-mail til privacy@hugo.example.com. Har du brug for at anmode dine data eller slette din konto? Brug Indstillinger → Slet konto eller send en e-mail til privacy@hugo.example.com."
+    },
+    "terms": {
+      "title": "Servicevilkår",
+      "lastUpdated": "Senest opdateret 17. marts 2026",
+      "agreementTitle": "Aftale om vilkår",
+      "agreementBody": "Ved at bruge Hugo accepterer du disse vilkår. Hvis du ikke er enig i nogen del, må du ikke bruge tjenesten. Hugo kan opdatere disse vilkår til enhver tid. Væsentlige ændringer meddeles via e-mail. Dit fortsatte brug af Hugo efter opdateringer betyder, at du accepterer de nye vilkår.",
+      "useLicenseTitle": "Tilladt brug",
+      "useLicenseBody": "Hugo er et personligt økonomisk sporingsværktøj. Du må: Spore dine egne abonnementer og forsikringspolicer. Importere abonnementdata fra din Gmail- eller Outlook-indbakke. Uploade dokumenter til analyse. Dele abonnementer og policer med husholdningsmedlemmer via Hugos husstands funktion. Slette din konto når som helst. Du må ikke: Forsøge at få uautoriseret adgang til Hugo eller dets systemer. Reverse engineering, dekompilering eller forsøg på at udlede kildekoden. Bruge automatiserede værktøjer eller scrapers til at udtrække data. Udgive sig for at være andre brugere eller oprette falske konti. Bruge Hugo til ulovlige formål eller krænke nogen lov.",
+      "disclaimerTitle": "Tjeneste leveret som-er",
+      "disclaimerBody": "Hugo leveres som-er uden garantier af nogen art. Vi garanterer ikke: Oppetid eller kontinuerlig tilgængelighed. Nøjagtighed af AI-analyse eller abonnements registrering. Realtids nøjagtighed af valutakurser. At Hugo er fejlfri eller fri for skadelig kode. AI-drevne indsigter er kun til informativ brug og kan ikke erstatte professionel økonomisk eller forsikringsrådgivning.",
+      "liabilityTitle": "Ansvarsbegrænsninger",
+      "liabilityBody": "Hugo er ikke ansvarlig for: Indirekte, hændelige eller følgeskader (tabte besparelser, forpassede abonnementskanceationer osv.). Fejl eller udeladelser i AI-analyse. Unøjagtige valutakurser eller priser. Tjeneste nedetid eller datatab. Afhængighed af oplysninger leveret af Hugo. Den maksimale ansvar for Hugo er begrænset til gebyrer betalt i de seneste 12 måneder (aktuelt: $0, da Hugo er gratis). Disse begrænsninger gælder i det omfang, loven tillader det.",
+      "indemnificationTitle": "Erstatning",
+      "indemnificationBody": "Du accepterer at holde Hugo skadesløs for eventuelle krav, skader eller omkostninger, der stammer fra: Dit brug af Hugo i strid med disse vilkår. Dit overtrædelse af nogen lov eller tredjeparts rettigheder. Dit uautoriserede adgang til Hugo eller misbrug af din konto. Indhold, du inputter til Hugo.",
+      "modificationsTitle": "Ændringer af tjenesten",
+      "modificationsBody": "Hugo kan ændre eller afbryde funktioner til enhver tid, med eller uden varsel. Vi kan afslutte din konto, hvis: Du overtræder disse vilkår. Din konto udgør en sikkerhedsrisiko. Kontoen er inaktiv i længere tid. Du anmoder om sletning af konto.",
+      "terminationTitle": "Opsigelse",
+      "terminationBody": "Du kan slette din konto når som helst via Indstillinger → Slet konto. Når en konto slettes, fjernes alle tilknyttede data permanent fra Hugos database. Se privatlivspolitikken for oplysninger om filbevarelse. Sletningen er øjeblikkelig og uigenkaldelig.",
+      "governingLawTitle": "Gældende lov",
+      "governingLawBody": "Disse vilkår er reguleret af lovene i USA. Eventuelle juridiske tvister skal bringes for de relevante domstole i USA. Du giver afkald på din ret til domstolsprøvelse i det omfang, som tilladt af loven.",
+      "contactTitle": "Kontakt",
+      "contactBody": "Spørgsmål om disse vilkår? Send en e-mail til legal@hugo.example.com. For supportproblemer skal du sende en e-mail til support@hugo.example.com."
+    }
   }
 }

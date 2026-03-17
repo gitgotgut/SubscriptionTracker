@@ -47,8 +47,8 @@ export async function MarketingFooter() {
             <div>
               <p className="font-medium text-gray-300 mb-2">{t("footer.legal")}</p>
               <ul className="space-y-1.5">
-                <li><span className="cursor-default">{t("footer.privacyPolicy")}</span></li>
-                <li><span className="cursor-default">{t("footer.termsOfService")}</span></li>
+                <li><Link href="/privacy" className="hover:text-white transition-colors">{t("footer.privacyPolicy")}</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">{t("footer.termsOfService")}</Link></li>
               </ul>
             </div>
           </div>
