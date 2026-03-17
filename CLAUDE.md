@@ -31,9 +31,10 @@ IMPORTANT: NextAuth v5 beta has breaking changes from v4 — always check `src/a
 Primary: `#4A6FA5` (slate blue) · Accent: `#C8644A` (terracotta)
 Fonts: Fraunces (serif display) + Plus Jakarta Sans (UI sans)
 
-## Git
+## Workflow
 
-- Conventional commits: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`
+- IMPORTANT: Always start in plan mode — research and plan before writing code. Get approval, then implement.
 - IMPORTANT: Always create a new branch for each feature or fix (`feature/<name>`, `fix/<name>`). Never commit directly to `main`.
+- Conventional commits: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`
 - Run lint + typecheck + tests before committing.
 - Create a PR to merge into `main`.

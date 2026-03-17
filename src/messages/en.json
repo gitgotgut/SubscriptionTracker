@@ -269,6 +269,18 @@
     "confirmLeave": "Leave household",
     "failedToLeave": "Failed to leave household"
   },
+  "sidebar": {
+    "home": "Home",
+    "overview": "Overview",
+    "analytics": "Analytics",
+    "import": "Import",
+    "settings": "Settings",
+    "proposals": "Proposals",
+    "certificates": "Certificates",
+    "claims": "Claims",
+    "billing": "Billing",
+    "files": "Files"
+  },
   "modules": {
     "hub": "Hub",
     "subscriptions": "Subscriptions",

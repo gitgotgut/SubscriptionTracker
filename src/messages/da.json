@@ -269,6 +269,18 @@
     "confirmLeave": "Forlad husstand",
     "failedToLeave": "Forlad husstand mislykkedes"
   },
+  "sidebar": {
+    "home": "Hjem",
+    "overview": "Overblik",
+    "analytics": "Analyse",
+    "import": "Importer",
+    "settings": "Indstillinger",
+    "proposals": "Tilbud",
+    "certificates": "Certifikater",
+    "claims": "Skader",
+    "billing": "Betaling",
+    "files": "Filer"
+  },
   "modules": {
     "hub": "Overblik",
     "subscriptions": "Abonnementer",

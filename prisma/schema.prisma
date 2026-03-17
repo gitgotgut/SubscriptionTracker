@@ -29,6 +29,8 @@ model User {
   household       Household?     @relation("HouseholdOwner")
   memberOf        HouseholdMember?
   insurancePolicies InsurancePolicy[]
+  insuranceClaims   InsuranceClaim[]
+  insuranceProposals InsuranceProposal[]
 }
 
 model Subscription {
@@ -110,6 +112,7 @@ model InsurancePolicy {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   documents       InsuranceDocument[]
+  claims          InsuranceClaim[]
 
   @@index([userId])
   @@index([householdId])
@@ -127,4 +130,42 @@ model InsuranceDocument {
   analysisResult Json?
 
   @@index([policyId])
+}
+
+model InsuranceClaim {
+  id              String          @id @default(cuid())
+  policyId        String
+  policy          InsurancePolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  claimDate       DateTime
+  amountCents     Int?
+  status          String          @default("open")
+  referenceNumber String?
+  notes           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([policyId])
+  @@index([userId])
+}
+
+model InsuranceProposal {
+  id                 String    @id @default(cuid())
+  userId             String
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider           String
+  type               String    @default("other")
+  quotedPremiumCents Int
+  currency           String    @default("USD")
+  billingCycle       String
+  validUntil         DateTime?
+  status             String    @default("pending")
+  notes              String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([userId])
 }
