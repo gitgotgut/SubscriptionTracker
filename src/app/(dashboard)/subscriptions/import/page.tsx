@@ -1,33 +1,142 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Mail, CheckCircle2, XCircle, Plus } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Mail, CheckCircle2, XCircle, Plus, FileText, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { GmailImportModal } from "@/components/gmail-import-modal";
 import { OutlookImportModal } from "@/components/outlook-import-modal";
+import { BankTranscriptModal } from "@/components/bank-transcript-modal";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import Link from "next/link";
+import type { BankTranscriptCandidate } from "@/lib/validations/bank-transcript";
+
+interface BankTranscript {
+  id: string;
+  fileName: string;
+  fileType: string;
+  uploadedAt: string;
+  parsedStatus: string;
+  candidates: BankTranscriptCandidate[] | null;
+}
 
 export default function SubscriptionsImportPage() {
   const t = useT();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [gmailConnected, setGmailConnected] = useState(false);
   const [outlookConnected, setOutlookConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [gmailModalOpen, setGmailModalOpen] = useState(false);
   const [outlookModalOpen, setOutlookModalOpen] = useState(false);
 
+  const [transcripts, setTranscripts] = useState<BankTranscript[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [selectedTranscript, setSelectedTranscript] = useState<BankTranscript | null>(null);
+  const [bankModalOpen, setBankModalOpen] = useState(false);
+  const [pollInterval, setPollInterval] = useState<NodeJS.Timeout | null>(null);
+
+  // Fetch initial data
   useEffect(() => {
-    fetch("/api/me")
-      .then((r) => r.json())
-      .then((u) => {
+    Promise.all([
+      fetch("/api/me").then((r) => r.json()),
+      fetch("/api/subscriptions/transcripts").then((r) => r.json()),
+    ])
+      .then(([u, txs]) => {
         setGmailConnected(!!u?.gmailConnected);
         setOutlookConnected(!!u?.outlookConnected);
+        setTranscripts(txs);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
+
+  // Poll for processing transcripts
+  useEffect(() => {
+    const hasProcessing = transcripts.some((t) => t.parsedStatus === "processing");
+
+    if (hasProcessing && !pollInterval) {
+      const interval = setInterval(() => {
+        fetch("/api/subscriptions/transcripts")
+          .then((r) => r.json())
+          .then((txs) => setTranscripts(txs));
+      }, 3000);
+      setPollInterval(interval);
+    } else if (!hasProcessing && pollInterval) {
+      clearInterval(pollInterval);
+      setPollInterval(null);
+    }
+
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [transcripts, pollInterval]);
+
+  // Handle file upload
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/subscriptions/upload-transcript", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        toast.error(error.error || "Upload failed");
+        return;
+      }
+
+      const data = await res.json();
+      toast.success("File uploaded, analysing...");
+
+      // Refresh transcript list
+      const txsRes = await fetch("/api/subscriptions/transcripts");
+      const txs = await txsRes.json();
+      setTranscripts(txs);
+
+      // Reset input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      toast.error("Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  // Handle review
+  function handleReview(transcript: BankTranscript) {
+    setSelectedTranscript(transcript);
+    setBankModalOpen(true);
+  }
+
+  // Handle delete
+  async function handleDelete(id: string) {
+    try {
+      const res = await fetch(`/api/subscriptions/transcripts/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setTranscripts((prev) => prev.filter((t) => t.id !== id));
+        toast.success("Transcript deleted");
+      } else {
+        toast.error("Delete failed");
+      }
+    } catch (error) {
+      toast.error("Delete failed");
+    }
+  }
 
   return (
     <>
@@ -146,6 +255,103 @@ export default function SubscriptionsImportPage() {
         </Card>
       </div>
 
+      {/* Bank Statement card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FileText className="h-5 w-5" />
+            Bank Statement
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Upload a bank export (PDF, CSV, or TXT) to detect recurring subscriptions.
+          </p>
+
+          {/* Upload input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.csv,.txt"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          <Button
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+          >
+            {uploading && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+            <FileText className="h-4 w-4 mr-1" />
+            Upload Statement
+          </Button>
+
+          {/* Transcripts list */}
+          {transcripts.length > 0 && (
+            <div className="space-y-2 border-t pt-4">
+              <p className="text-xs font-medium text-muted-foreground">
+                Recent uploads
+              </p>
+              {transcripts.map((transcript) => (
+                <div
+                  key={transcript.id}
+                  className="flex items-center justify-between p-2 bg-muted rounded-md text-sm"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{transcript.fileName}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {transcript.parsedStatus === "pending" && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          <Loader2 className="h-2 w-2 mr-1 animate-spin" />
+                          Queued
+                        </Badge>
+                      )}
+                      {transcript.parsedStatus === "processing" && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          <Loader2 className="h-2 w-2 mr-1 animate-spin" />
+                          Analysing
+                        </Badge>
+                      )}
+                      {transcript.parsedStatus === "completed" && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          {transcript.candidates?.length ?? 0} found
+                        </Badge>
+                      )}
+                      {transcript.parsedStatus === "failed" && (
+                        <Badge variant="destructive" className="text-[10px]">
+                          <AlertCircle className="h-2 w-2 mr-1" />
+                          Failed
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 ml-2">
+                    {transcript.parsedStatus === "completed" &&
+                      (transcript.candidates?.length ?? 0) > 0 && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleReview(transcript)}
+                        >
+                          Review
+                        </Button>
+                      )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDelete(transcript.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Manual add CTA */}
       <Card>
         <CardContent className="py-6 flex items-center gap-4">
@@ -174,6 +380,20 @@ export default function SubscriptionsImportPage() {
         onClose={() => setOutlookModalOpen(false)}
         onImported={() => setOutlookModalOpen(false)}
       />
+      {selectedTranscript && (
+        <BankTranscriptModal
+          open={bankModalOpen}
+          fileName={selectedTranscript.fileName}
+          candidates={selectedTranscript.candidates ?? []}
+          onClose={() => setBankModalOpen(false)}
+          onAdded={() => {
+            // Refresh transcript list after adding
+            fetch("/api/subscriptions/transcripts")
+              .then((r) => r.json())
+              .then((txs) => setTranscripts(txs));
+          }}
+        />
+      )}
     </>
   );
 }

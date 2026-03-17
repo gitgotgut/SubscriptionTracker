@@ -31,6 +31,7 @@ model User {
   insurancePolicies InsurancePolicy[]
   insuranceClaims   InsuranceClaim[]
   insuranceProposals InsuranceProposal[]
+  bankTranscripts BankTranscript[]
 }
 
 model Subscription {
@@ -166,6 +167,20 @@ model InsuranceProposal {
   notes              String?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model BankTranscript {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName     String
+  fileUrl      String
+  fileType     String
+  uploadedAt   DateTime @default(now())
+  parsedStatus String   @default("pending")
+  candidates   Json?
 
   @@index([userId])
 }
