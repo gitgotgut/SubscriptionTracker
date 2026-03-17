@@ -9,8 +9,9 @@ import {
   Shield,
   Bell,
   BarChart3,
-  Globe,
+  AlertCircle,
   LinkIcon,
+  FileText,
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing-header";
 import { MarketingFooter } from "@/components/marketing-footer";
@@ -138,14 +139,14 @@ export default async function Home() {
                   description: t("landing.featureAnalyticsDesc"),
                 },
                 {
-                  icon: <Globe className="h-5 w-5 text-primary" />,
-                  title: t("landing.featureLanguageTitle"),
-                  description: t("landing.featureLanguageDesc"),
+                  icon: <AlertCircle className="h-5 w-5 text-primary" />,
+                  title: t("landing.featureClaimsTitle"),
+                  description: t("landing.featureClaimsDesc"),
                 },
                 {
-                  icon: <LinkIcon className="h-5 w-5 text-accent" />,
-                  title: t("landing.featureCancelTitle"),
-                  description: t("landing.featureCancelDesc"),
+                  icon: <FileText className="h-5 w-5 text-accent" />,
+                  title: t("landing.featureProposalsTitle"),
+                  description: t("landing.featureProposalsDesc"),
                 },
               ].map((f) => (
                 <div key={f.title} className="rounded-2xl border border-border bg-white p-6">
