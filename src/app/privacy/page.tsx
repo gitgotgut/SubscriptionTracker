@@ -21,50 +21,74 @@ export default async function PrivacyPage() {
           <p className="text-xs text-gray-400">{t("policies.privacy.lastUpdated")}</p>
         </section>
 
-        {/* Intro */}
         <section className="max-w-2xl mx-auto px-6 pb-16">
+          {/* Intro */}
           <p className="text-gray-600 leading-relaxed mb-12">{t("policies.privacy.intro")}</p>
 
-          {/* Information We Collect */}
+          {/* 1. Information We Collect */}
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.privacy.collectTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.privacy.collectBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.privacy.collectBody")}</p>
           </div>
 
-          {/* How We Use Information */}
+          {/* 2. Legal Basis for Processing */}
+          <div className="mb-12">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.privacy.legalBasisTitle")}</h2>
+            <p className="text-gray-600 leading-relaxed">{t("policies.privacy.legalBasisBody")}</p>
+          </div>
+
+          {/* 3. How We Use Your Information */}
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.privacy.useTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.privacy.useBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.privacy.useBody")}</p>
           </div>
 
-          {/* Third-Party Data Sharing */}
+          {/* 4. Cookies */}
+          <div className="mb-12">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.privacy.cookiesTitle")}</h2>
+            <p className="text-gray-600 leading-relaxed">{t("policies.privacy.cookiesBody")}</p>
+          </div>
+
+          {/* 5. Third-Party Data Sharing */}
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.privacy.thirdPartyTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.privacy.thirdPartyBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.privacy.thirdPartyBody")}</p>
           </div>
 
-          {/* Data Security */}
+          {/* 6. International Data Transfers */}
+          <div className="mb-12">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.privacy.internationalTitle")}</h2>
+            <p className="text-gray-600 leading-relaxed">{t("policies.privacy.internationalBody")}</p>
+          </div>
+
+          {/* 7. Data Security */}
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.privacy.securityTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.privacy.securityBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.privacy.securityBody")}</p>
           </div>
 
-          {/* Your Rights */}
+          {/* 8. Children's Privacy */}
+          <div className="mb-12">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.privacy.childrenTitle")}</h2>
+            <p className="text-gray-600 leading-relaxed">{t("policies.privacy.childrenBody")}</p>
+          </div>
+
+          {/* 9. Your Rights (GDPR) */}
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.privacy.rightsTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.privacy.rightsBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.privacy.rightsBody")}</p>
           </div>
 
-          {/* Data Retention */}
+          {/* 10. Data Retention */}
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.privacy.retentionTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.privacy.retentionBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.privacy.retentionBody")}</p>
           </div>
 
-          {/* Contact */}
+          {/* 11. Contact */}
           <div>
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.privacy.contactTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.privacy.contactBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.privacy.contactBody")}</p>
           </div>
         </section>
       </main>

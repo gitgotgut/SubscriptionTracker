@@ -21,59 +21,83 @@ export default async function TermsPage() {
           <p className="text-xs text-gray-400">{t("policies.terms.lastUpdated")}</p>
         </section>
 
-        {/* Agreement to Terms */}
         <section className="max-w-2xl mx-auto px-6 pb-16">
+          {/* 1. Agreement to Terms */}
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.terms.agreementTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.terms.agreementBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.terms.agreementBody")}</p>
           </div>
 
-          {/* Permitted Use */}
+          {/* 2. Account Eligibility */}
+          <div className="mb-12">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.terms.eligibilityTitle")}</h2>
+            <p className="text-gray-600 leading-relaxed">{t("policies.terms.eligibilityBody")}</p>
+          </div>
+
+          {/* 3. Permitted Use */}
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.terms.useLicenseTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.terms.useLicenseBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.terms.useLicenseBody")}</p>
           </div>
 
-          {/* Service As-Is */}
+          {/* 4. Your Data */}
+          <div className="mb-12">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.terms.userDataTitle")}</h2>
+            <p className="text-gray-600 leading-relaxed">{t("policies.terms.userDataBody")}</p>
+          </div>
+
+          {/* 5. Intellectual Property */}
+          <div className="mb-12">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.terms.intellectualPropertyTitle")}</h2>
+            <p className="text-gray-600 leading-relaxed">{t("policies.terms.intellectualPropertyBody")}</p>
+          </div>
+
+          {/* 6. Service Provided As-Is */}
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.terms.disclaimerTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.terms.disclaimerBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.terms.disclaimerBody")}</p>
           </div>
 
-          {/* Limitations of Liability */}
+          {/* 7. Limitations of Liability */}
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.terms.liabilityTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.terms.liabilityBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.terms.liabilityBody")}</p>
           </div>
 
-          {/* Indemnification */}
+          {/* 8. Indemnification */}
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.terms.indemnificationTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.terms.indemnificationBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.terms.indemnificationBody")}</p>
           </div>
 
-          {/* Service Modifications */}
+          {/* 9. Dispute Resolution */}
+          <div className="mb-12">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.terms.disputeTitle")}</h2>
+            <p className="text-gray-600 leading-relaxed">{t("policies.terms.disputeBody")}</p>
+          </div>
+
+          {/* 10. Service Modifications */}
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.terms.modificationsTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.terms.modificationsBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.terms.modificationsBody")}</p>
           </div>
 
-          {/* Termination */}
+          {/* 11. Termination */}
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.terms.terminationTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.terms.terminationBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.terms.terminationBody")}</p>
           </div>
 
-          {/* Governing Law */}
+          {/* 12. Governing Law */}
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.terms.governingLawTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.terms.governingLawBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.terms.governingLawBody")}</p>
           </div>
 
-          {/* Contact */}
+          {/* 13. Contact */}
           <div>
             <h2 className="text-xl font-bold text-gray-900 mb-3">{t("policies.terms.contactTitle")}</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{t("policies.terms.contactBody")}</p>
+            <p className="text-gray-600 leading-relaxed">{t("policies.terms.contactBody")}</p>
           </div>
         </section>
       </main>
